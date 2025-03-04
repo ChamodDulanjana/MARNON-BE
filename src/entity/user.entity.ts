@@ -3,6 +3,7 @@ import { BaseEntity } from './common_attribute/base.entity';
 import { RoleEnum } from '../common/enums/role.enum';
 import { UserProductEntity } from './user_product.entity';
 import { Exclude } from 'class-transformer';
+import { ReviewEntity } from './review.entity';
 
 @Entity('user') 
 export class UserEntity extends BaseEntity{
@@ -30,4 +31,8 @@ export class UserEntity extends BaseEntity{
   @OneToMany(() => UserProductEntity, userProduct => userProduct.user, {cascade: true})
   @Exclude()
   userProduct: UserProductEntity[];
+
+  @OneToMany(() => ReviewEntity, review => review.user, {cascade: true})
+  @Exclude()
+  review: ReviewEntity[];
 }
