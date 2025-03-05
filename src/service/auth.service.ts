@@ -47,8 +47,8 @@ export class AuthService {
     }
 
     // Check if user role is valid
-    if (userDTO.role !== RoleEnum.ADMIN && userDTO.role !== RoleEnum.USER) {
-      throw new ValidationException(['Invalid role']);
+    if (userDTO.role !== RoleEnum.USER) {
+      throw new ValidationException([`Role name should be ${RoleEnum.USER}`]);
     }
 
     try {
@@ -59,7 +59,7 @@ export class AuthService {
       user.password = await bcrypt.hash(userDTO.password, 10);
       user.contact = userDTO.contact;
       user.address = userDTO.address;
-      user.role = userDTO.role;
+      user.role = RoleEnum.USER;
       user.createBy = userDTO.email;
       user.isActive = true;
 

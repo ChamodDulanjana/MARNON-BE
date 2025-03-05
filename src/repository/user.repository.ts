@@ -26,6 +26,14 @@ export class UserRepository{
     });
   }
 
+  async getAllUsers(): Promise<UserEntity[]> {
+    return this.userRepository.find();
+  }
+
+  async getAllActiveUsers(): Promise<UserEntity[]> {
+    return this.userRepository.find({ where: { isActive: true } });
+  }
+
   // Check id user email exists
   async isEmailExist(email: string): Promise<UserEntity | null> {
     return await this.userRepository.findOne({ where: { email: email } });
