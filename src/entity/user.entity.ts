@@ -26,7 +26,7 @@ export class UserEntity extends BaseEntity{
   address: string;
 
   @Column({name: 'role', type: 'enum', enum: RoleEnum})
-  role: string;
+  role: RoleEnum;
 
   @OneToMany(() => UserProductEntity, userProduct => userProduct.user, {cascade: true})
   @Exclude()
