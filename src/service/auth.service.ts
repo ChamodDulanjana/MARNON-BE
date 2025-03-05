@@ -47,7 +47,7 @@ export class AuthService {
     }
 
     // Check if user role is valid
-    if (userDTO.role !== RoleEnum.ADMIN && userDTO.role !== RoleEnum.CUSTOMER) {
+    if (userDTO.role !== RoleEnum.ADMIN && userDTO.role !== RoleEnum.USER) {
       throw new ValidationException(['Invalid role']);
     }
 
