@@ -17,7 +17,13 @@ export class UserRepository{
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
-    return await this.userRepository.findOne({ where: { email } });
+    return this.userRepository.findOne({ where: { email } });
+  }
+
+  async findById(id: number): Promise<UserEntity | null> {
+    return this.userRepository.findOne({
+      where: { id },
+    });
   }
 
   // Check id user email exists
