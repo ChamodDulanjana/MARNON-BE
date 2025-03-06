@@ -5,6 +5,7 @@ import { Exclude } from 'class-transformer';
 import { ProductCategoryEntity } from './product_category.entity';
 import { ProductSizeEntity } from './product_size.entity';
 import { ReviewEntity } from './review.entity';
+import { ProductImageEntity } from './product_image.entity';
 
 @Entity('product')
 export class ProductEntity extends BaseEntity{
@@ -13,9 +14,6 @@ export class ProductEntity extends BaseEntity{
 
   @Column({name: 'description', type: 'longtext'})
   description: string;
-
-  @Column({name: 'image', type: 'longtext'})
-  image: string;
 
   @Column({name: 'old_price'})
   oldPrice: number;
@@ -38,4 +36,8 @@ export class ProductEntity extends BaseEntity{
   @OneToMany(() => ReviewEntity, review => review.product, {cascade: true})
   @Exclude()
   review: ReviewEntity[];
+
+  @OneToMany(() => ProductImageEntity, productImage => productImage.product, {cascade: true})
+  @Exclude()
+  productImage: ProductImageEntity[];
 }

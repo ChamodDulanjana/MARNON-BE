@@ -14,4 +14,14 @@ export class ProductRepository{
   async createProduct(product: ProductEntity): Promise<ProductEntity> {
       return this.productRepository.save(product);
   }
+
+  // Check if the product name exists
+  async checkProductName(name: string): Promise<ProductEntity | null> {
+    return await this.productRepository.findOne({where: { name: name }});
+  }
+
+  // Check if the product description exists
+  async checkProductDescription(description: string): Promise<ProductEntity | null> {
+    return await this.productRepository.findOne({where: { description: description }});
+  }
 }
