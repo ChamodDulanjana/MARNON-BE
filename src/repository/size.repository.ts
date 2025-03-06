@@ -19,6 +19,14 @@ export class SizeRepository{
     return this.sizeRepository.findOne({where: { id: id }});
   }
 
+  async getAllSizes(): Promise<SizeEntity[]> {
+    return this.sizeRepository.find();
+  }
+
+  async getAllActiveSizes(): Promise<SizeEntity[]> {
+    return this.sizeRepository.find({where: { isActive: true }});
+  }
+
   // Check if the size name exists
   async checkSizeName(name: string): Promise<SizeEntity | null> {
     return await this.sizeRepository.findOne({where: { size: name }});
