@@ -5,6 +5,21 @@ import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { AlreadyExistException } from '../common/exception/alreadyExist.exception';
 import { SizeEntity } from '../entity/size.entity';
 
+type SizeGet = {
+  id: number;
+  size: string;
+  isActive: boolean;
+  createBy: string;
+  modifyBy: string;
+  createDate: Date;
+  modifyDate: Date;
+}
+
+type SizeIdAndName = {
+  id: number;
+  size: string;
+}
+
 @Injectable()
 export class SizeService{
   private readonly LOGGER = new Logger(SizeService.name);
@@ -67,9 +82,19 @@ export class SizeService{
       throw new NotFoundException(['Size not found']);
     }
 
+    const size: SizeGet = {
+      id: sizeEntity.id,
+      size: sizeEntity.size,
+      isActive: sizeEntity.isActive,
+      createBy: sizeEntity.createBy,
+      modifyBy: sizeEntity.modifyBy,
+      createDate: sizeEntity.createDate,
+      modifyDate: sizeEntity.modifyDate,
+    }
+
     try {
       this.LOGGER.log(`Size with id ${id} found successfully`);
-      return new ResponseDTO(200, `Size with id ${id} found successfully`, sizeEntity);
+      return new ResponseDTO(200, `Size with id ${id} found successfully`, size);
     } catch (error) {
       this.LOGGER.error(`Failed to find size: ${error.message}`);
       throw error;
@@ -79,8 +104,21 @@ export class SizeService{
   async getAllSizes(): Promise<ResponseDTO> {
     try {
       const sizeEntities = await this.sizeRepository.getAllSizes();
+
+      const sizes: SizeGet[] = sizeEntities.map((sizeEntity) => {
+        return {
+          id: sizeEntity.id,
+          size: sizeEntity.size,
+          isActive: sizeEntity.isActive,
+          createBy: sizeEntity.createBy,
+          modifyBy: sizeEntity.modifyBy,
+          createDate: sizeEntity.createDate,
+          modifyDate: sizeEntity.modifyDate,
+        }
+      });
+
       this.LOGGER.log(`All sizes found successfully`);
-      return new ResponseDTO(200, `All sizes found successfully`, sizeEntities);
+      return new ResponseDTO(200, `All sizes found successfully`, sizes);
     } catch (error) {
       this.LOGGER.error(`Failed to find sizes: ${error.message}`);
       throw error;
@@ -90,8 +128,21 @@ export class SizeService{
   async getAllActiveSizes(): Promise<ResponseDTO> {
     try {
       const sizeEntities = await this.sizeRepository.getAllActiveSizes();
+
+      const sizes: SizeGet[] = sizeEntities.map((sizeEntity) => {
+        return {
+          id: sizeEntity.id,
+          size: sizeEntity.size,
+          isActive: sizeEntity.isActive,
+          createBy: sizeEntity.createBy,
+          modifyBy: sizeEntity.modifyBy,
+          createDate: sizeEntity.createDate,
+          modifyDate: sizeEntity.modifyDate,
+        }
+      });
+
       this.LOGGER.log(`All active sizes found successfully`);
-      return new ResponseDTO(200, `All active sizes found successfully`, sizeEntities);
+      return new ResponseDTO(200, `All active sizes found successfully`, sizes);
     } catch (error) {
       this.LOGGER.error(`Failed to find active sizes: ${error.message}`);
       throw error;
