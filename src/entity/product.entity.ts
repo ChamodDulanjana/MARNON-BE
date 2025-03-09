@@ -21,6 +21,9 @@ export class ProductEntity extends BaseEntity{
   @Column({name: 'new_price'})
   newPrice: number;
 
+  @Column({name: 'color'})
+  color: string;
+
   @OneToMany(() => UserProductEntity, userProduct => userProduct.product, {cascade: true})
   @Exclude()
   userProduct: UserProductEntity[];

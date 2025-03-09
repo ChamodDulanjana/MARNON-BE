@@ -1,6 +1,16 @@
 import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { ImageTypeEnum } from '../common/enums/image_type.enum';
 
+type ImageProps = {
+  url: string,
+  type: ImageTypeEnum,
+}
+
+type SizeProps = {
+  sizeId: number,
+  qty: number,
+}
+
 export class ProductDTO{
   @IsNotEmpty({message: 'Name is required'})
   @IsString({message: 'Name must be a string'})
@@ -13,10 +23,7 @@ export class ProductDTO{
   @IsNotEmpty({message: 'Image is required'})
   @IsArray({message: 'Image must be an array'})
   @ValidateNested()
-  image: {
-    url: string,
-    type: ImageTypeEnum,
-  }[];
+  image: ImageProps[];
 
   @IsNotEmpty({message: 'Old Price is required'})
   @IsNumber({}, {message: 'Old Price must be a number'})
@@ -33,13 +40,10 @@ export class ProductDTO{
   @IsNotEmpty({message: 'Size & QTY is required'})
   @IsArray({message: 'Size & QTY must be an array'})
   @ValidateNested()
-  data: {
-    size: string;
-    qty: number;
-  }[];
+  size: SizeProps[];
 
   @IsNotEmpty({message: 'Category is required'})
   @IsArray({message: 'Category must be an array'})
-  @IsString({each: true, message: 'Category must be a string'})
-  category: string[];
+  @IsNumber({}, {each: true, message: 'Category must be a number'})
+  categoryIds: number[];
 }

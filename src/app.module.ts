@@ -6,6 +6,7 @@ import { getTypeOrmConfig } from './config/database.config';
 import { AuthModule } from './module/auth.module';
 import { UserModule } from './module/user.module';
 import { ProductModule } from './module/product.module';
+import { SizeModule } from './module/size.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ProductModule } from './module/product.module';
     AuthModule,
     UserModule,
     ProductModule,
+    SizeModule,
   ],
   controllers: [AppController],
   providers: [AppService],

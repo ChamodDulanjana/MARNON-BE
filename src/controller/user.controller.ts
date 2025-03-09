@@ -1,4 +1,17 @@
-import { Body, Controller, Get, Header, Logger, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Header,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UserService } from '../service/user.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { Roles } from '../common/decorators/roles.decorator';
@@ -8,6 +21,7 @@ import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { UserDTO } from '../dto/user.dto';
 import { CommonUtil } from '../util/common-util';
 import { JwtService } from '@nestjs/jwt';
+import { ValidationException } from '../common/exception/validation.exception';
 
 @Controller('user')
 export class UserController {
@@ -59,6 +73,17 @@ export class UserController {
   }
 
   @UseGuards(AuthGuard) // Apply JWT Guards
+  @UsePipes(new ValidationPipe({ // Validate incoming data
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    exceptionFactory: (errors) => {
+      return new ValidationException(errors.map((err) => {
+        return err.constraints
+          ? Object.values(err.constraints).join(', ')
+          : 'Invalid value';
+      }));
+    },
+  }))
   @Patch('reguler/:id')
   async updateByRegularUser(@Param('id') id: number, @Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
@@ -74,6 +99,17 @@ export class UserController {
 
   @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
   @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @UsePipes(new ValidationPipe({ // Validate incoming data
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    exceptionFactory: (errors) => {
+      return new ValidationException(errors.map((err) => {
+        return err.constraints
+          ? Object.values(err.constraints).join(', ')
+          : 'Invalid value';
+      }));
+    },
+  }))
   @Patch('admin/:id')
   async updateByAdminUser(@Param('id') id: number, @Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
@@ -89,6 +125,17 @@ export class UserController {
 
   @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
   @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @UsePipes(new ValidationPipe({ // Validate incoming data
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    exceptionFactory: (errors) => {
+      return new ValidationException(errors.map((err) => {
+        return err.constraints
+          ? Object.values(err.constraints).join(', ')
+          : 'Invalid value';
+      }));
+    },
+  }))
   @Post('createByAdmin')
   async createByAdminUser(@Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
