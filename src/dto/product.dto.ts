@@ -22,7 +22,6 @@ export class ProductDTO{
 
   @IsNotEmpty({message: 'Image is required'})
   @IsArray({message: 'Image must be an array'})
-  @ValidateNested()
   image: ImageProps[];
 
   @IsNotEmpty({message: 'Old Price is required'})
@@ -39,7 +38,6 @@ export class ProductDTO{
 
   @IsNotEmpty({message: 'Size & QTY is required'})
   @IsArray({message: 'Size & QTY must be an array'})
-  @ValidateNested()
   size: SizeProps[];
 
   @IsNotEmpty({message: 'Category is required'})
