@@ -195,7 +195,9 @@ export class ProductService {
   }
 
 
+  async updateProduct(id: number, productDTO: ProductDTO, userName: string): Promise<ResponseDTO> {
 
+  }
 
 
 }
