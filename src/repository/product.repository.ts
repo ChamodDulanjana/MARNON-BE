@@ -15,6 +15,13 @@ export class ProductRepository{
       return this.productRepository.save(product);
   }
 
+  async getById(id: number): Promise<ProductEntity | null> {
+    return this.productRepository.findOne({
+      where: { id: id },
+      relations: ['category', 'productImage', 'productSize', 'review']
+    });
+  }
+
   // Check if the product name exists
   async checkProductName(name: string): Promise<ProductEntity | null> {
     return await this.productRepository.findOne({where: { name: name }});

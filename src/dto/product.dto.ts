@@ -2,11 +2,13 @@ import { IsArray, IsNotEmpty, IsNumber, IsString, ValidateNested } from 'class-v
 import { ImageTypeEnum } from '../common/enums/image_type.enum';
 
 type ImageProps = {
+  id: number | null,
   url: string,
   type: ImageTypeEnum,
 }
 
 type SizeProps = {
+  id: number | null,
   sizeId: number,
   qty: number,
 }
