@@ -13,6 +13,34 @@ import { ProductSizeEntity } from '../entity/product_size.entity';
 import { CategoryRepository } from '../repository/category.repository';
 import { ProductCategoryEntity } from '../entity/product_category.entity';
 
+type ProductGet = {
+  id: number;
+  name: string;
+  description: string;
+  oldPrice: number;
+  newPrice: number;
+  color: string;
+  image: {
+    id: number;
+    image: string;
+    type: ImageTypeEnum;
+  }[];
+  size: {
+    id: number;
+    size: string;
+    qty: number;
+  }[];
+  category: {
+    categoryId: number;
+    name: string;
+  }[];
+  isActive: boolean;
+  createBy: string;
+  modifyBy: string;
+  createDate: Date;
+  modifyDate: Date;
+}
+
 @Injectable()
 export class ProductService {
   private readonly LOGGER = new Logger(ProductService.name);
@@ -193,7 +221,6 @@ export class ProductService {
       await queryRunner.release();
     }
   }
-
 
   async updateProduct(id: number, productDTO: ProductDTO, userName: string): Promise<ResponseDTO> {
     // Check if the product exists
@@ -421,5 +448,52 @@ export class ProductService {
     }
   }
 
+  async getById(id: number): Promise<ResponseDTO> {
+    const productEntity = await this.productRepository.getById(id);
+    if (!productEntity) {
+      throw new NotFoundException(['Product not found']);
+    }
 
+    try {
+      const productDTO: ProductGet = {
+        id: productEntity.id,
+        name: productEntity.name,
+        description: productEntity.description,
+        oldPrice: productEntity.oldPrice,
+        newPrice: productEntity.newPrice,
+        color: productEntity.color,
+        image: productEntity.productImage.map((img) => {
+          return {
+            id: img.id,
+            image: img.image,
+            type: img.type,
+          }
+        }),
+        size: productEntity.productSize.map((size) => {
+          return {
+            id: size.id,
+            size: size.size.size,
+            qty: size.qty,
+          }
+        }),
+        category: productEntity.productCategory.map((category) => {
+          return {
+            categoryId: category.category.id,
+            name: category.category.name,
+          }
+        }),
+        isActive: productEntity.isActive,
+        createBy: productEntity.createBy,
+        modifyBy: productEntity.modifyBy,
+        createDate: productEntity.createDate,
+        modifyDate: productEntity.modifyDate,
+      }
+
+      this.LOGGER.log(`Product found successfully`);
+      return new ResponseDTO(200, 'Product found successfully', productDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product: ${error.message}`);
+      throw error;
+    }
+  }
 }

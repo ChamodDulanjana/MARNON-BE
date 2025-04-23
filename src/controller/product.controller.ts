@@ -1,4 +1,16 @@
-import { Body, Controller, Logger, Param, Patch, Post, Req, UseGuards, UsePipes, ValidationPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Logger,
+  Param,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from '@nestjs/common';
 import { ProductService } from '../service/product.service';
 import { JwtService } from '@nestjs/jwt';
 import { ProductDTO } from '../dto/product.dto';
@@ -68,6 +80,17 @@ export class ProductController{
       return await this.productService.updateProduct(id, productDTO, userName);
     } catch (error) {
       this.LOGGER.error(`Failed to update product: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @Get(':id')
+  async getProductById(@Param('id') id: number): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get product by ID ${id}`);
+      return await this.productService.getById(id);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product by ID: ${error.message}`);
       throw error;
     }
   }

@@ -18,7 +18,7 @@ export class ProductRepository{
   async getById(id: number): Promise<ProductEntity | null> {
     return this.productRepository.findOne({
       where: { id: id },
-      relations: ['category', 'productImage', 'productSize', 'review']
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
     });
   }
 
