@@ -31,4 +31,11 @@ export class ProductRepository{
   async checkProductDescription(description: string): Promise<ProductEntity | null> {
     return await this.productRepository.findOne({where: { description: description }});
   }
+
+  // Get all products
+  async getAllProducts(): Promise<ProductEntity[]> {
+    return this.productRepository.find({
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
+  }
 }
