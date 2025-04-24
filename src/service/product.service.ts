@@ -559,4 +559,60 @@ export class ProductService {
       throw error;
     }
   }
+
+  async getAllMensProducts(): Promise<ResponseDTO>{
+    const productEntities = await this.productRepository.findAllMensProducts();
+    if (productEntities.length === 0){
+      throw new NotFoundException(['Products not found']);
+    }
+    try {
+      const productList: ProductGet[] = productEntities.map(productEntity => {
+        return {
+          id: productEntity.id,
+          name: productEntity.name,
+          description: productEntity.description,
+          oldPrice: productEntity.oldPrice,
+          newPrice: productEntity.newPrice,
+          color: productEntity.color,
+          image: productEntity.productImage
+            .filter((img) => img.isActive)
+            .map((img) => {
+              return {
+                id: img.id,
+                image: img.image,
+                type: img.type,
+              }
+            }),
+          size: productEntity.productSize
+            .filter((size) => size.isActive)
+            .map((size) => {
+              return {
+                id: size.id,
+                size: size.size.size,
+                qty: size.qty,
+              }
+            }),
+          category: productEntity.productCategory
+            .filter((category) => category.isActive)
+            .map((category) => {
+              return {
+                categoryId: category.category.id,
+                name: category.category.name,
+              }
+            }),
+          isActive: productEntity.isActive,
+          createBy: productEntity.createBy,
+          modifyBy: productEntity.modifyBy,
+          createDate: productEntity.createDate,
+          modifyDate: productEntity.modifyDate,
+        }
+      })
+
+      this.LOGGER.log(`Product List found successfully`);
+      return new ResponseDTO(200, 'Product List found successfully', productList);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product List: ${error.message}`);
+      throw error;
+    }
+  }
 }

@@ -105,4 +105,15 @@ export class ProductController{
       throw error;
     }
   }
+
+  @Get('all/mens-products')
+  async getAllMensProducts(): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log('Received request to get all mens products');
+      return await this.productService.getAllProducts();
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all mens products: ${error.message}`);
+      throw error;
+    }
+  }
 }
