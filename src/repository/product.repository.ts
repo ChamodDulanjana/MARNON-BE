@@ -129,11 +129,28 @@ export class ProductRepository{
 
   // Get all WOMENs products
   async findAllWomensProducts(): Promise<ProductEntity[]> {
-    // Step 1: Get IDs of products that are linked to 'Men'
+    // Step 1: Get IDs of products that are linked to 'Women'
     const menProductIds = (await this.productRepository.createQueryBuilder('product')
       .innerJoin('product.productCategory', 'productCategory')
       .innerJoin('productCategory.category', 'category')
       .where('category.name = :name', { name: 'Women' })
+      .select('product.id')
+      .getMany()).map(p => p.id);
+
+    // Step 2: Load full data for those products
+    return await this.productRepository.find({
+      where: { id: In(menProductIds) },
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
+  }
+
+  // Get all KIDs products
+  async findAllKidsProducts(): Promise<ProductEntity[]> {
+    // Step 1: Get IDs of products that are linked to 'Kids'
+    const menProductIds = (await this.productRepository.createQueryBuilder('product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .where('category.name = :name', { name: 'Kid' })
       .select('product.id')
       .getMany()).map(p => p.id);
 
