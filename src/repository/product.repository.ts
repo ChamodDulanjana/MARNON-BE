@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { ProductEntity } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 
@@ -42,7 +42,7 @@ export class ProductRepository{
 
   // Get all MENs products
   async findAllMensProducts(): Promise<ProductEntity[]> {
-    const result = await this.dataSource.query(`
+    /*const result = await this.dataSource.query(`
       SELECT p.*
       FROM product p
       INNER JOIN product_category pc ON pc.product_id = p.id
@@ -51,5 +51,96 @@ export class ProductRepository{
     `, ['Men']);
 
     return result;
+    //----------------------------------------------------
+
+    return this.productRepository.createQueryBuilder('product')
+      .leftJoinAndSelect('product.productCategory', 'productCategory')
+      .leftJoinAndSelect('productCategory.category', 'category')
+      .leftJoinAndSelect('product.productImage', 'productImage')
+      .leftJoinAndSelect('product.productSize', 'productSize')
+      .leftJoinAndSelect('productSize.size', 'size')
+      .where('category.name = :categoryName', { categoryName: 'Men' })
+      .andWhere('product.isActive = :isActive', { isActive: true })
+      .getMany();
+    //----------------------------------------------------
+
+    return this.productRepository.createQueryBuilder('product')
+      .leftJoin('product.productCategory', 'productCategory')
+      .leftJoin('productCategory.category', 'category')
+      .leftJoin('product.productImage', 'productImage')
+      .leftJoin('product.productSize', 'productSize')
+      .leftJoin('productSize.size', 'size')
+      .addSelect([
+        'product.id',
+        'product.name',
+        'product.description',
+        'product.oldPrice',
+        'product.newPrice',
+        'product.color',
+        'product.isActive',
+        'product.createBy',
+        'product.modifyBy',
+        'product.createDate',
+        'product.modifyDate',
+        'productCategory.id',
+        'category.id',
+        'category.name',
+        'productImage.id',
+        'productImage.image',
+        'productImage.type',
+        'productSize.id',
+        'productSize.qty',
+        'size.id',
+        'size.size'
+      ])
+      .where('category.name = :categoryName', { categoryName: 'Men' })
+      .andWhere('product.isActive = :isActive', { isActive: true })
+      .getRawMany();
+    //----------------------------------------------------
+
+    return await this.productRepository.find({
+      where: {
+        isActive: true,
+        productCategory: {
+          category: {
+            name: 'Men',
+          },
+        },
+      },
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
+    //----------------------------------------------------
+    */
+
+    // Step 1: Get IDs of products that are linked to 'Men'
+    const menProductIds = (await this.productRepository.createQueryBuilder('product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .where('category.name = :name', { name: 'Men' })
+      .select('product.id')
+      .getMany()).map(p => p.id);
+
+    // Step 2: Load full data for those products
+    return await this.productRepository.find({
+      where: { id: In(menProductIds) },
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
+  }
+
+  // Get all WOMENs products
+  async findAllWomensProducts(): Promise<ProductEntity[]> {
+    // Step 1: Get IDs of products that are linked to 'Men'
+    const menProductIds = (await this.productRepository.createQueryBuilder('product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .where('category.name = :name', { name: 'Women' })
+      .select('product.id')
+      .getMany()).map(p => p.id);
+
+    // Step 2: Load full data for those products
+    return await this.productRepository.find({
+      where: { id: In(menProductIds) },
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
   }
 }
