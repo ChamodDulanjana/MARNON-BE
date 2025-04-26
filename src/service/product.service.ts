@@ -558,120 +558,14 @@ export class ProductService {
     }
   }
 
-  async getAllMensProducts(): Promise<ResponseDTO>{
+  async getProductsByCategory(category: string): Promise<ResponseDTO>{
+    if (category !== 'Men' && category !== 'Women' && category !== 'Kid'){
+      throw new BadRequestException('Invalid category');
+    }
+
     try {
       // Fetch Mens products
-      const productEntities = await this.productRepository.findAllMensProducts();
-
-      const productList: ProductGet[] = productEntities.map(productEntity => {
-        return {
-          id: productEntity.id,
-          name: productEntity.name,
-          description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
-          color: productEntity.color,
-          image: productEntity.productImage
-            .filter((productImg) => productImg.isActive)
-            .map((productImg) => {
-              return {
-                id: productImg.id,
-                image: productImg.image,
-                type: productImg.type,
-              }
-            }),
-          size: productEntity.productSize
-            .filter((productSize) => productSize.isActive)
-            .map((productSize) => {
-              return {
-                id: productSize.id,
-                size: productSize.size.size,
-                qty: productSize.qty,
-              }
-            }),
-          category: productEntity.productCategory
-            .filter((productCategory) => productCategory.isActive)
-            .map((productCategory) => {
-              return {
-                id: productCategory.id,
-                name: productCategory.category.name,
-              }
-            }),
-          isActive: productEntity.isActive,
-          createBy: productEntity.createBy,
-          modifyBy: productEntity.modifyBy,
-          createDate: productEntity.createDate,
-          modifyDate: productEntity.modifyDate,
-        }
-      })
-
-      this.LOGGER.log(`Product List found successfully`);
-      return new ResponseDTO(200, 'Product List found successfully', productList);
-    } catch (error) {
-      this.LOGGER.error(`Failed to get product List: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async getAllWomensProducts(): Promise<ResponseDTO>{
-    try {
-      // Fetch Womens products
-      const productEntities = await this.productRepository.findAllWomensProducts();
-
-      const productList: ProductGet[] = productEntities.map(productEntity => {
-        return {
-          id: productEntity.id,
-          name: productEntity.name,
-          description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
-          color: productEntity.color,
-          image: productEntity.productImage
-            .filter((productImg) => productImg.isActive)
-            .map((productImg) => {
-              return {
-                id: productImg.id,
-                image: productImg.image,
-                type: productImg.type,
-              }
-            }),
-          size: productEntity.productSize
-            .filter((productSize) => productSize.isActive)
-            .map((productSize) => {
-              return {
-                id: productSize.id,
-                size: productSize.size.size,
-                qty: productSize.qty,
-              }
-            }),
-          category: productEntity.productCategory
-            .filter((productCategory) => productCategory.isActive)
-            .map((productCategory) => {
-              return {
-                id: productCategory.id,
-                name: productCategory.category.name,
-              }
-            }),
-          isActive: productEntity.isActive,
-          createBy: productEntity.createBy,
-          modifyBy: productEntity.modifyBy,
-          createDate: productEntity.createDate,
-          modifyDate: productEntity.modifyDate,
-        }
-      })
-
-      this.LOGGER.log(`Product List found successfully`);
-      return new ResponseDTO(200, 'Product List found successfully', productList);
-    } catch (error) {
-      this.LOGGER.error(`Failed to get product List: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async getAllKidsProducts(): Promise<ResponseDTO>{
-    try {
-      // Fetch kids products
-      const productEntities = await this.productRepository.findAllKidsProducts();
+      const productEntities = await this.productRepository.findProductsByCategory(category);
 
       const productList: ProductGet[] = productEntities.map(productEntity => {
         return {

@@ -41,7 +41,7 @@ export class ProductRepository{
   }
 
   // Get all MENs products
-  async findAllMensProducts(): Promise<ProductEntity[]> {
+  async findProductsByCategory(category: string): Promise<ProductEntity[]> {
     /*const result = await this.dataSource.query(`
       SELECT p.*
       FROM product p
@@ -112,45 +112,11 @@ export class ProductRepository{
     //----------------------------------------------------
     */
 
-    // Step 1: Get IDs of products that are linked to 'Men'
+    // Step 1: Get IDs of products that are linked to 'Men, Women or Kid'
     const menProductIds = (await this.productRepository.createQueryBuilder('product')
       .innerJoin('product.productCategory', 'productCategory')
       .innerJoin('productCategory.category', 'category')
-      .where('category.name = :name', { name: 'Men' })
-      .select('product.id')
-      .getMany()).map(p => p.id);
-
-    // Step 2: Load full data for those products
-    return await this.productRepository.find({
-      where: { id: In(menProductIds) },
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
-    });
-  }
-
-  // Get all WOMENs products
-  async findAllWomensProducts(): Promise<ProductEntity[]> {
-    // Step 1: Get IDs of products that are linked to 'Women'
-    const menProductIds = (await this.productRepository.createQueryBuilder('product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .where('category.name = :name', { name: 'Women' })
-      .select('product.id')
-      .getMany()).map(p => p.id);
-
-    // Step 2: Load full data for those products
-    return await this.productRepository.find({
-      where: { id: In(menProductIds) },
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
-    });
-  }
-
-  // Get all KIDs products
-  async findAllKidsProducts(): Promise<ProductEntity[]> {
-    // Step 1: Get IDs of products that are linked to 'Kids'
-    const menProductIds = (await this.productRepository.createQueryBuilder('product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .where('category.name = :name', { name: 'Kid' })
+      .where('category.name = :name', { name: category })
       .select('product.id')
       .getMany()).map(p => p.id);
 

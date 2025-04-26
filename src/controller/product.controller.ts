@@ -106,35 +106,13 @@ export class ProductController{
     }
   }
 
-  @Get('all/mens-products')
-  async getAllMensProducts(): Promise<ResponseDTO> {
+  @Get('all/products/:category')
+  async getAlProductsByCategory(@Param('category') category: string): Promise<ResponseDTO> {
     try {
       this.LOGGER.log('Received request to get all mens products');
-      return await this.productService.getAllMensProducts();
+      return await this.productService.getProductsByCategory(category);
     } catch (error) {
       this.LOGGER.error(`Failed to get all mens products: ${error.message}`);
-      throw error;
-    }
-  }
-
-  @Get('all/womens-products')
-  async getAllWomensProducts(): Promise<ResponseDTO> {
-    try {
-      this.LOGGER.log('Received request to get all womens products');
-      return await this.productService.getAllWomensProducts();
-    } catch (error) {
-      this.LOGGER.error(`Failed to get all womens products: ${error.message}`);
-      throw error;
-    }
-  }
-
-  @Get('all/kids-products')
-  async getAllKidsProducts(): Promise<ResponseDTO> {
-    try {
-      this.LOGGER.log('Received request to get all kids products');
-      return await this.productService.getAllKidsProducts();
-    } catch (error) {
-      this.LOGGER.error(`Failed to get all kids products: ${error.message}`);
       throw error;
     }
   }
