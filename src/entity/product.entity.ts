@@ -15,10 +15,20 @@ export class ProductEntity extends BaseEntity{
   @Column({name: 'description', type: 'longtext'})
   description: string;
 
-  @Column({name: 'old_price'})
+  @Column({
+    name: 'old_price',
+    type: 'decimal',
+    precision: 10, // total number of digits
+    scale: 2       // number of digits after the decimal point
+  })
   oldPrice: number;
 
-  @Column({name: 'new_price'})
+  @Column({
+    name: 'new_price',
+    type: 'decimal',
+    precision: 10, // total number of digits
+    scale: 2       // number of digits after the decimal point
+  })
   newPrice: number;
 
   @Column({name: 'color'})

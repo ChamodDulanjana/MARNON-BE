@@ -508,7 +508,7 @@ export class ProductService {
       // Fetch all products
       const productEntities = await this.productRepository.getAllProducts();
 
-      const productList: ProductGet[] = productEntities.map(productEntity => {
+      const productList = productEntities.map(productEntity => {
         return {
           id: productEntity.id,
           name: productEntity.name,
@@ -516,39 +516,16 @@ export class ProductService {
           oldPrice: productEntity.oldPrice,
           newPrice: productEntity.newPrice,
           color: productEntity.color,
-          image: productEntity.productImage
-            .filter((productImg) => productImg.isActive)
-            .map((productImg) => {
-              return {
-                id: productImg.id,
-                image: productImg.image,
-                type: productImg.type,
-              }
-            }),
-          size: productEntity.productSize
-            .filter((productSize) => productSize.isActive)
-            .map((productSize) => {
-              return {
-                id: productSize.id,
-                size: productSize.size.size,
-                qty: productSize.qty,
-              }
-            }),
-          category: productEntity.productCategory
-            .filter((productCategory) => productCategory.isActive)
-            .map((productCategory) => {
-              return {
-                id: productCategory.id,
-                name: productCategory.category.name,
-              }
-            }),
+          image: productEntity.productImage.find(
+            (productImg) => productImg.isActive && productImg.type === 'MAIN'
+          )?.image || '',
           isActive: productEntity.isActive,
           createBy: productEntity.createBy,
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
         }
-      })
+      });
 
       this.LOGGER.log(`Product List found successfully`);
       return new ResponseDTO(200, 'Product List found successfully', productList);
@@ -567,7 +544,7 @@ export class ProductService {
       // Fetch Mens products
       const productEntities = await this.productRepository.findProductsByCategory(category);
 
-      const productList: ProductGet[] = productEntities.map(productEntity => {
+      const productList = productEntities.map(productEntity => {
         return {
           id: productEntity.id,
           name: productEntity.name,
@@ -575,39 +552,16 @@ export class ProductService {
           oldPrice: productEntity.oldPrice,
           newPrice: productEntity.newPrice,
           color: productEntity.color,
-          image: productEntity.productImage
-            .filter((productImg) => productImg.isActive)
-            .map((productImg) => {
-              return {
-                id: productImg.id,
-                image: productImg.image,
-                type: productImg.type,
-              }
-            }),
-          size: productEntity.productSize
-            .filter((productSize) => productSize.isActive)
-            .map((productSize) => {
-              return {
-                id: productSize.id,
-                size: productSize.size.size,
-                qty: productSize.qty,
-              }
-            }),
-          category: productEntity.productCategory
-            .filter((productCategory) => productCategory.isActive)
-            .map((productCategory) => {
-              return {
-                id: productCategory.id,
-                name: productCategory.category.name,
-              }
-            }),
+          image: productEntity.productImage.find(
+            (productImg) => productImg.isActive && productImg.type === 'MAIN'
+          )?.image || '',
           isActive: productEntity.isActive,
           createBy: productEntity.createBy,
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
         }
-      })
+      });
 
       this.LOGGER.log(`Product List found successfully`);
       return new ResponseDTO(200, 'Product List found successfully', productList);
