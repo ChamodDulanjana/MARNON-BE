@@ -97,8 +97,6 @@ export class SizeController{
     }
   }
 
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
   @Get('all/active-sizes')
   async getAllActiveSizes(): Promise<ResponseDTO> {
     try {
