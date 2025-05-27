@@ -12,6 +12,7 @@ import { SizeRepository } from '../repository/size.repository';
 import { ProductSizeEntity } from '../entity/product_size.entity';
 import { CategoryRepository } from '../repository/category.repository';
 import { ProductCategoryEntity } from '../entity/product_category.entity';
+import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 
 type ProductGet = {
   id: number;
@@ -570,4 +571,37 @@ export class ProductService {
       throw error;
     }
   }
+
+  async getFilteredProducts(filterProductDTO: FilterProductDTO): Promise<ResponseDTO> {
+    try{
+      // Fetch filtered products
+      const productEntities = await this.productRepository.getFilteredProducts(filterProductDTO);
+
+       const productList = productEntities.map(productEntity => {
+        return {
+          id: productEntity.id,
+          name: productEntity.name,
+          description: productEntity.description,
+          oldPrice: productEntity.oldPrice,
+          newPrice: productEntity.newPrice,
+          color: productEntity.color,
+          image: productEntity.productImage.find(
+            (productImg) => productImg.isActive && productImg.type === 'MAIN'
+          )?.image || '',
+          isActive: productEntity.isActive,
+          createBy: productEntity.createBy,
+          modifyBy: productEntity.modifyBy,
+          createDate: productEntity.createDate,
+          modifyDate: productEntity.modifyDate,
+        }
+      });
+
+      this.LOGGER.log(`Product List found successfully`);
+      return new ResponseDTO(200, 'Product List found successfully', productList);
+    } catch (error){
+      this.LOGGER.error(`Failed to get product List: ${error.message}`);
+      throw error;
+    }
+  }
+
 }

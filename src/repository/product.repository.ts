@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, In, Repository } from 'typeorm';
+import { DataSource, Filter, In, Repository } from 'typeorm';
 import { ProductEntity } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 
 @Injectable()
 export class ProductRepository{
@@ -113,7 +114,7 @@ export class ProductRepository{
     */
 
     // Step 1: Get IDs of products that are linked to 'Men, Women or Kid'
-    const menProductIds = (await this.productRepository.createQueryBuilder('product')
+    const productIds = (await this.productRepository.createQueryBuilder('product')
       .innerJoin('product.productCategory', 'productCategory')
       .innerJoin('productCategory.category', 'category')
       .where('category.name = :name', { name: category })
@@ -122,7 +123,69 @@ export class ProductRepository{
 
     // Step 2: Load full data for those products
     return await this.productRepository.find({
-      where: { id: In(menProductIds) },
+      where: { id: In(productIds) },
+      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+    });
+  }
+
+  async getFilteredProducts(filterProductDTO: FilterProductDTO): Promise<ProductEntity[]> {
+    const { sortBy, size, color, categoryName } = filterProductDTO;
+
+    let orderByClause = '';
+    if (sortBy) {
+      switch (sortBy) {
+        case 'newest':
+          orderByClause = 'ORDER BY p.create_date DESC';
+          break;
+        case 'priceLowToHigh':
+          orderByClause = 'ORDER BY p.new_price ASC';
+          break;
+        case 'priceHighToLow':
+          orderByClause = 'ORDER BY p.new_price DESC';
+          break;
+        case 'popularity':  // Assuming popularity is determined by the number of users who have interacted with the product
+          orderByClause = 'ORDER BY COUNT(up.id) DESC';
+          break; 
+        default:
+          orderByClause = '';
+      }
+    }
+
+    const conditions: string[] = ['p.is_active = true'];
+    const params: any[] = [];
+
+    if (categoryName) {
+      conditions.push('c.name = ?');
+      params.push(categoryName);
+    }
+
+    if (size) {
+      conditions.push('s.size = ?');
+      params.push(size);
+    }
+
+    if (color) {
+      conditions.push('p.color = ?');
+      params.push(color);
+    }
+
+    const query = `
+    SELECT p.id
+    FROM product p
+    LEFT JOIN product_category pc ON pc.product_id = p.id
+    LEFT JOIN category c ON c.id = pc.category_id
+    LEFT JOIN product_size ps ON ps.product_id = p.id
+    LEFT JOIN size s ON s.id = ps.size_id
+    LEFT JOIN user_product up ON up.product_id = p.id
+    WHERE ${conditions.join(' AND ')}
+    ${orderByClause}
+  `;
+
+    const productIdsResult = await this.dataSource.query(query, params);
+    const productIds = productIdsResult.map((row: any) => row.id);
+    
+    return await this.productRepository.find({
+      where: { id: In(productIds) },
       relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
     });
   }

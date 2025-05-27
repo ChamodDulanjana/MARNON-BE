@@ -21,6 +21,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
+import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 
 @Controller('product')
 export class ProductController{
@@ -115,5 +116,16 @@ export class ProductController{
       this.LOGGER.error(`Failed to get all mens products: ${error.message}`);
       throw error;
     }
+  }
+
+  @Get('all/filter-products')
+  async getFilteredProducts(@Body() filterProductDTO: FilterProductDTO): Promise<ResponseDTO> { 
+    try {
+      this.LOGGER.log('Received request to get filtered products');
+      return await this.productService.getFilteredProducts(filterProductDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get filtered products: ${error.message}`);
+      throw error;
+    } 
   }
 }
