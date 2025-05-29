@@ -118,7 +118,7 @@ export class ProductController{
     }
   }
 
-  @Get('all/filter-products')
+  @Post('all/filter-products')
   async getFilteredProducts(@Body() filterProductDTO: FilterProductDTO): Promise<ResponseDTO> { 
     try {
       this.LOGGER.log('Received request to get filtered products');

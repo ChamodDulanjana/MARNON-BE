@@ -131,62 +131,57 @@ export class ProductRepository{
   async getFilteredProducts(filterProductDTO: FilterProductDTO): Promise<ProductEntity[]> {
     const { sortBy, size, color, categoryName } = filterProductDTO;
 
-    let orderByClause = '';
-    if (sortBy) {
+    const query = this.productRepository.createQueryBuilder('product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .leftJoin('product.productSize', 'productSize')
+      .leftJoin('productSize.size', 'size')
+      .leftJoin('product.userProduct', 'userProduct') // Assuming you have a UserProduct entity for popularity
+      .where('category.name = :name', { name: categoryName })
+      .andWhere('product.isActive = :isActive', { isActive: true });
+
+    if (size) {
+      query.andWhere('size.size = :size', { size });
+      query.andWhere('productSize.isActive = :isActive', { isActive: true });
+    }
+
+    if (color){
+      query.andWhere('product.color = :color', { color });
+    }
+
+    if (sortBy){
       switch (sortBy) {
         case 'newest':
-          orderByClause = 'ORDER BY p.create_date DESC';
+          query.orderBy('product.createDate', 'DESC');
           break;
         case 'priceLowToHigh':
-          orderByClause = 'ORDER BY p.new_price ASC';
+          query.orderBy('product.newPrice', 'ASC');
           break;
         case 'priceHighToLow':
-          orderByClause = 'ORDER BY p.new_price DESC';
+          query.orderBy('product.newPrice', 'DESC');
           break;
-        case 'popularity':  // Assuming popularity is determined by the number of users who have interacted with the product
-          orderByClause = 'ORDER BY COUNT(up.id) DESC';
-          break; 
-        default:
-          orderByClause = '';
       }
     }
 
-    const conditions: string[] = ['p.is_active = true'];
-    const params: any[] = [];
+    if (sortBy !== 'popularity') {
+      return await query
+        .leftJoinAndSelect('product.productImage', 'productImage')
+        .getMany();
 
-    if (categoryName) {
-      conditions.push('c.name = ?');
-      params.push(categoryName);
+    } else {
+      const popularityResults = await query
+        .select('product.id', 'id')
+        .addSelect('COUNT(userProduct.id)', 'popularity')
+        .groupBy('product.id')
+        .orderBy('popularity', 'DESC')
+        .getRawMany();
+
+      const orderedIds = popularityResults.map(r => r.id);
+
+      return await this.productRepository.find({
+        where: { id: In(orderedIds) },
+        relations: ['productImage'],
+      });
     }
-
-    if (size) {
-      conditions.push('s.size = ?');
-      params.push(size);
-    }
-
-    if (color) {
-      conditions.push('p.color = ?');
-      params.push(color);
-    }
-
-    const query = `
-    SELECT p.id
-    FROM product p
-    LEFT JOIN product_category pc ON pc.product_id = p.id
-    LEFT JOIN category c ON c.id = pc.category_id
-    LEFT JOIN product_size ps ON ps.product_id = p.id
-    LEFT JOIN size s ON s.id = ps.size_id
-    LEFT JOIN user_product up ON up.product_id = p.id
-    WHERE ${conditions.join(' AND ')}
-    ${orderByClause}
-  `;
-
-    const productIdsResult = await this.dataSource.query(query, params);
-    const productIds = productIdsResult.map((row: any) => row.id);
-    
-    return await this.productRepository.find({
-      where: { id: In(productIds) },
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
-    });
   }
 }
