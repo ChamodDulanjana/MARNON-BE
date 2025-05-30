@@ -27,11 +27,15 @@ export class AuthService {
 
       this.LOGGER.log(`${user.email} logged successfully`);
       return new ResponseDTO(200, `${user.email} logged successfully`, {
-          access_token: this.jwtService.sign(payload)
+          accessToken: this.jwtService.sign(payload),
+          userName: user.username,
+          userId: user.id,
+          role: user.role,
         }
       ); // Return JWT token
     }
-    throw new UnauthorizedException('Invalid credentials');
+    // throw new UnauthorizedException('Invalid credentials');
+    return new ResponseDTO(401, 'Invalid credentials');
   }
 
   // Create user
