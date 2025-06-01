@@ -33,8 +33,7 @@ export class UserController {
   ) {
   }
 
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @UseGuards(AuthGuard) // Apply both JWT and Role Guards
   @Get(':id')
   async getUserById(@Param('id') id: number): Promise<ResponseDTO> {
     try {
@@ -84,7 +83,7 @@ export class UserController {
       }));
     },
   }))
-  @Patch('reguler/:id')
+  @Patch('regular/:id')
   async updateByRegularUser(@Param('id') id: number, @Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
       const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
