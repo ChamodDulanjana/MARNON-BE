@@ -7,6 +7,7 @@ import { ValidationException } from '../common/exception/validation.exception';
 import { RoleEnum } from '../common/enums/role.enum';
 import { UserEntity } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
+import { UserUpdateDTO } from '../dto/user-update.dto';
 
 type UserGet = {
   id: number;
@@ -114,16 +115,10 @@ export class UserService{
     }
   }
 
-  async updateByRegularUser(id: number, userDTO: UserDTO, userName: string): Promise<ResponseDTO> {
+  async updateByRegularUser(id: number, userDTO: UserUpdateDTO, userName: string): Promise<ResponseDTO> {
     const userEntity = await this.userRepository.findById(id);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
-    }
-
-    // Check if user email exists
-    const userByEmail = await this.userRepository.isEmailExist(userDTO.email);
-    if (userByEmail && userByEmail.id !== id) {
-      throw new ValidationException(['Email already exists']);
     }
 
     // Check if user contact exists
@@ -148,16 +143,10 @@ export class UserService{
     }
   }
 
-  async updateByAdminUser(id: number, userDTO: UserDTO, userName: string): Promise<ResponseDTO> {
+  async updateByAdminUser(id: number, userDTO: UserUpdateDTO, userName: string): Promise<ResponseDTO> {
     const userEntity = await this.userRepository.findById(id);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
-    }
-
-    // Check if user email exists
-    const userByEmail = await this.userRepository.isEmailExist(userDTO.email);
-    if (userByEmail && userByEmail.id !== id) {
-      throw new ValidationException(['Email already exists']);
     }
 
     // Check if user contact exists

@@ -22,6 +22,7 @@ import { UserDTO } from '../dto/user.dto';
 import { CommonUtil } from '../util/common-util';
 import { JwtService } from '@nestjs/jwt';
 import { ValidationException } from '../common/exception/validation.exception';
+import { UserUpdateDTO } from '../dto/user-update.dto';
 
 @Controller('user')
 export class UserController {
@@ -84,7 +85,7 @@ export class UserController {
     },
   }))
   @Patch('regular/:id')
-  async updateByRegularUser(@Param('id') id: number, @Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
+  async updateByRegularUser(@Param('id') id: number, @Body() userDTO: UserUpdateDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
       const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
 
@@ -110,7 +111,7 @@ export class UserController {
     },
   }))
   @Patch('admin/:id')
-  async updateByAdminUser(@Param('id') id: number, @Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
+  async updateByAdminUser(@Param('id') id: number, @Body() userDTO: UserUpdateDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
       const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
 
