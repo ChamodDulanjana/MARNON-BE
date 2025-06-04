@@ -5,7 +5,7 @@ import {
   Logger,
   Param,
   Patch,
-  Post,
+  Post, Query,
   Req,
   UseGuards,
   UsePipes,
@@ -127,5 +127,19 @@ export class ProductController{
       this.LOGGER.error(`Failed to get filtered products: ${error.message}`);
       throw error;
     } 
+  }
+
+  @Get('all/categoryAndCount')
+  async getProductsByCategoryAndCount(
+    @Query('category') category: string,
+    @Query('count') count: number
+  ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get products by category ${category} and count ${count}`);
+      return await this.productService.getProductsByCategoryAndCount(category, count);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get products by category and count: ${error.message}`);
+      throw error;
+    }
   }
 }

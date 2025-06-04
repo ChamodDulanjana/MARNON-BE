@@ -128,6 +128,7 @@ export class ProductRepository{
     });
   }
 
+  // Get products by filter
   async getFilteredProducts(filterProductDTO: FilterProductDTO): Promise<ProductEntity[]> {
     const { sortBy, size, color, categoryName } = filterProductDTO;
 
@@ -183,5 +184,19 @@ export class ProductRepository{
         relations: ['productImage'],
       });
     }
+  }
+
+  // Get products by category and count
+  async getProductsByCategoryAndCount(category: string, count: number): Promise<ProductEntity[]> {
+    return this.productRepository.createQueryBuilder('product')
+      .leftJoinAndSelect('product.productCategory', 'productCategory')
+      .leftJoinAndSelect('productCategory.category', 'category')
+      .leftJoinAndSelect('product.productImage', 'productImage')
+      .leftJoinAndSelect('product.productSize', 'productSize')
+      .leftJoinAndSelect('productSize.size', 'size')
+      .where('category.name = :categoryName', { categoryName: category })
+      .andWhere('product.isActive = :isActive', { isActive: true })
+      .take(count)
+      .getMany();
   }
 }

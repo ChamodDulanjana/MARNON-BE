@@ -604,4 +604,39 @@ export class ProductService {
     }
   }
 
+  async getProductsByCategoryAndCount(category: string, count: number): Promise<ResponseDTO> {
+    if (category !== 'Men' && category !== 'Women' && category !== 'Kid'){
+      throw new BadRequestException('Invalid category');
+    }
+
+    try {
+      // Fetch Mens products
+      const productEntities = await this.productRepository.getProductsByCategoryAndCount(category, count);
+
+      const productList = productEntities.map(productEntity => {
+        return {
+          id: productEntity.id,
+          name: productEntity.name,
+          description: productEntity.description,
+          oldPrice: productEntity.oldPrice,
+          newPrice: productEntity.newPrice,
+          color: productEntity.color,
+          /*image: productEntity.productImage.find(
+            (productImg) => productImg.isActive && productImg.type === 'MAIN'
+          )?.image || '',*/
+          isActive: productEntity.isActive,
+          createBy: productEntity.createBy,
+          modifyBy: productEntity.modifyBy,
+          createDate: productEntity.createDate,
+          modifyDate: productEntity.modifyDate,
+        }
+      });
+
+      this.LOGGER.log(`Product List found successfully`);
+      return new ResponseDTO(200, 'Product List found successfully', productList);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product List: ${error.message}`);
+      throw error;
+    }
+  }
 }
