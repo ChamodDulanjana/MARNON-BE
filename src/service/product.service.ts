@@ -621,9 +621,9 @@ export class ProductService {
           oldPrice: productEntity.oldPrice,
           newPrice: productEntity.newPrice,
           color: productEntity.color,
-          /*image: productEntity.productImage.find(
+          image: productEntity.productImage.find(
             (productImg) => productImg.isActive && productImg.type === 'MAIN'
-          )?.image || '',*/
+          )?.image || '',
           isActive: productEntity.isActive,
           createBy: productEntity.createBy,
           modifyBy: productEntity.modifyBy,
