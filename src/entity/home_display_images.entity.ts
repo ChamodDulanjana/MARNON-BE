@@ -6,6 +6,6 @@ export class HomeDisplayImagesEntity extends BaseEntity{
     @Column({name: 'type'})
     type: string;
 
-    @Column({name: 'image_url'})
+    @Column({name: 'image_url', type: 'longtext'})
     imageUrl: string;
 }
