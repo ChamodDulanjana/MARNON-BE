@@ -3,41 +3,59 @@ import { DataSource, Filter, In, Repository } from 'typeorm';
 import { ProductEntity } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Injectable()
-export class ProductRepository{
+export class ProductRepository {
   constructor(
-    @InjectRepository(ProductEntity)  // Injecting the repository
+    @InjectRepository(ProductEntity) // Injecting the repository
     private readonly productRepository: Repository<ProductEntity>,
     private readonly dataSource: DataSource, // Injecting the data source
-  ) {
-  }
+  ) {}
 
   async createProduct(product: ProductEntity): Promise<ProductEntity> {
-      return this.productRepository.save(product);
+    return this.productRepository.save(product);
   }
 
   async getById(id: number): Promise<ProductEntity | null> {
     return this.productRepository.findOne({
       where: { id: id },
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+      relations: [
+        'productCategory',
+        'productCategory.category',
+        'productImage',
+        'productSize',
+        'productSize.size',
+        'review',
+      ],
     });
   }
 
   // Check if the product name exists
   async checkProductName(name: string): Promise<ProductEntity | null> {
-    return await this.productRepository.findOne({where: { name: name }});
+    return await this.productRepository.findOne({ where: { name: name } });
   }
 
   // Check if the product description exists
-  async checkProductDescription(description: string): Promise<ProductEntity | null> {
-    return await this.productRepository.findOne({where: { description: description }});
+  async checkProductDescription(
+    description: string,
+  ): Promise<ProductEntity | null> {
+    return await this.productRepository.findOne({
+      where: { description: description },
+    });
   }
 
   // Get all products
   async getAllProducts(): Promise<ProductEntity[]> {
     return this.productRepository.find({
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+      relations: [
+        'productCategory',
+        'productCategory.category',
+        'productImage',
+        'productSize',
+        'productSize.size',
+        'review',
+      ],
     });
   }
 
@@ -114,17 +132,27 @@ export class ProductRepository{
     */
 
     // Step 1: Get IDs of products that are linked to 'Men, Women or Kid'
-    const productIds = (await this.productRepository.createQueryBuilder('product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .where('category.name = :name', { name: category })
-      .select('product.id')
-      .getMany()).map(p => p.id);
+    const productIds = (
+      await this.productRepository
+        .createQueryBuilder('product')
+        .innerJoin('product.productCategory', 'productCategory')
+        .innerJoin('productCategory.category', 'category')
+        .where('category.name = :name', { name: category })
+        .select('product.id')
+        .getMany()
+    ).map((p) => p.id);
 
     // Step 2: Load full data for those products
     return await this.productRepository.find({
       where: { id: In(productIds) },
-      relations: ['productCategory', 'productCategory.category', 'productImage', 'productSize', 'productSize.size', 'review']
+      relations: [
+        'productCategory',
+        'productCategory.category',
+        'productImage',
+        'productSize',
+        'productSize.size',
+        'review',
+      ],
     });
   }
 
@@ -146,11 +174,11 @@ export class ProductRepository{
       query.andWhere('productSize.isActive = :isActive', { isActive: true });
     }
 
-    if (color){
+    if (color) {
       query.andWhere('product.color = :color', { color });
     }
 
-    if (sortBy){
+    if (sortBy) {
       switch (sortBy) {
         case 'newest':
           query.orderBy('product.createDate', 'DESC');
@@ -168,7 +196,6 @@ export class ProductRepository{
       return await query
         .leftJoinAndSelect('product.productImage', 'productImage')
         .getMany();
-
     } else {
       const popularityResults = await query
         .select('product.id', 'id')
@@ -177,7 +204,7 @@ export class ProductRepository{
         .orderBy('popularity', 'DESC')
         .getRawMany();
 
-      const orderedIds = popularityResults.map(r => r.id);
+      const orderedIds = popularityResults.map((r) => r.id);
 
       return await this.productRepository.find({
         where: { id: In(orderedIds) },
@@ -200,33 +227,51 @@ export class ProductRepository{
       .getMany();
   }
 
-  async getPopularProductsForAdmin(): Promise<ProductEntity[]> {
-    return this.productRepository.createQueryBuilder('product')
-    .leftJoin('product.userProduct', 'userProduct')
-    .leftJoinAndSelect('product.productCategory', 'productCategory')
-    .leftJoinAndSelect('productCategory.category', 'category')
-    .where('product.isActive = :isActive', { isActive: true })
-    .groupBy('product.id')
-    .addGroupBy('productCategory.id')
-    .addGroupBy('category.id')
-    .addGroupBy('productCategory.product')
-    .select([
-      'product',
-      'productCategory',
-      'category',
-      'COUNT(userProduct.id) AS userProductCount'
-    ])
-    .orderBy('userProductCount', 'DESC')
-    .getRawAndEntities()
-    .then(result => result.entities);
+  async getPopularProductsForAdmin(paginationDTO: PaginationDTO): Promise<any> {
+    const { page, limit } = paginationDTO;
+    const offset = (page - 1) * limit;
+
+    const query = this.productRepository
+      .createQueryBuilder('product')
+      .leftJoin('product.userProduct', 'userProduct')
+      .leftJoinAndSelect('product.productCategory', 'productCategory')
+      .leftJoinAndSelect('productCategory.category', 'category')
+      .where('product.isActive = :isActive', { isActive: true })
+      .groupBy('product.id')
+      .addGroupBy('productCategory.id')
+      .addGroupBy('category.id')
+      .addGroupBy('productCategory.product')
+      .select([
+        'product',
+        'productCategory',
+        'category',
+      ])
+      .addSelect('COUNT(userProduct.id)', 'userProductCount')
+      .orderBy('userProductCount', 'DESC');
+
+    // Clone the query for count
+    const total = await query.getCount();
+
+    // Apply pagination
+    const paginated = await query
+      .skip(offset)
+      .take(limit)
+      .getRawAndEntities();
+
+    return {
+      productEntities: paginated.entities,
+      totalRows: total,
+    };
   }
 
   async getSalesByProductId(productId: number): Promise<number> {
-    const result = await this.dataSource.query(`
-      SELECT COUNT(*) as salesCount
-      FROM user_product
-      WHERE product_id = ?
-    `, [productId]);
+    const result = await this.dataSource.query(
+      `SELECT COUNT(*) as salesCount
+        FROM user_product
+        WHERE product_id = ?
+        AND is_active = true
+      `, [productId],
+    );
 
     return parseInt(result[0].salesCount, 10);
   }

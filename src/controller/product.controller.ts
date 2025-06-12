@@ -22,6 +22,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Controller('product')
 export class ProductController{
@@ -144,10 +145,10 @@ export class ProductController{
   }
 
   @Get('all/admin/popular-products')
-  async getPopularProductsForAdmin(): Promise<ResponseDTO> {
+  async getPopularProductsForAdmin(@Body() paginationDTO: PaginationDTO): Promise<ResponseDTO> {
     try {
       this.LOGGER.log('Received request to get popular products for admin');
-      return await this.productService.getPopularProductsForAdmin();
+      return await this.productService.getPopularProductsForAdmin(paginationDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to get popular products for admin: ${error.message}`);
       throw error;

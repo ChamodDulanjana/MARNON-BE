@@ -13,6 +13,7 @@ import { ProductSizeEntity } from '../entity/product_size.entity';
 import { CategoryRepository } from '../repository/category.repository';
 import { ProductCategoryEntity } from '../entity/product_category.entity';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
+import { PaginationDTO } from 'src/dto/pagination.dto';
 
 type ProductGet = {
   id: number;
@@ -40,7 +41,7 @@ type ProductGet = {
   modifyBy: string;
   createDate: Date;
   modifyDate: Date;
-}
+};
 
 @Injectable()
 export class ProductService {
@@ -210,13 +211,11 @@ export class ProductService {
 
       this.LOGGER.log(`Product created successfully`);
       return new ResponseDTO(201, 'Product created successfully', null);
-
     } catch (error) {
       this.LOGGER.error(`Failed to create product: ${error.message}`);
       // Rollback the transaction
       await queryRunner.rollbackTransaction();
       throw error;
-
     } finally {
       // Release the queryRunner
       await queryRunner.release();
@@ -331,7 +330,7 @@ export class ProductService {
       await queryRunner.manager.save(productEntity);
 
       // Exists product image entities
-      const  existsProductImageEntities = productEntity.productImage;
+      const existsProductImageEntities = productEntity.productImage;
 
       // Update the product image entities and deactivate if not found in the request
       for (const existsProductImageEntity of existsProductImageEntities) {
@@ -433,16 +432,13 @@ export class ProductService {
       // Commit the transaction
       await queryRunner.commitTransaction();
 
-
       this.LOGGER.log(`Product updated successfully`);
       return new ResponseDTO(200, 'Product updated successfully');
-
     } catch (error) {
       this.LOGGER.error(`Failed to update product: ${error.message}`);
       // Rollback the transaction
       await queryRunner.rollbackTransaction();
       throw error;
-
     } finally {
       // Release the queryRunner
       await queryRunner.release();
@@ -470,7 +466,7 @@ export class ProductService {
               id: productImg.id,
               image: productImg.image,
               type: productImg.type,
-            }
+            };
           }),
         size: productEntity.productSize
           .filter((productSize) => productSize.isActive)
@@ -479,7 +475,7 @@ export class ProductService {
               id: productSize.id,
               size: productSize.size.size,
               qty: productSize.qty,
-            }
+            };
           }),
         category: productEntity.productCategory
           .filter((productCategory) => productCategory.isActive)
@@ -487,14 +483,14 @@ export class ProductService {
             return {
               id: productCategory.id,
               name: productCategory.category.name,
-            }
+            };
           }),
         isActive: productEntity.isActive,
         createBy: productEntity.createBy,
         modifyBy: productEntity.modifyBy,
         createDate: productEntity.createDate,
         modifyDate: productEntity.modifyDate,
-      }
+      };
 
       this.LOGGER.log(`Product found successfully`);
       return new ResponseDTO(200, 'Product found successfully', productDTO);
@@ -504,7 +500,7 @@ export class ProductService {
     }
   }
 
-  async getAllProducts(): Promise<ResponseDTO>{
+  async getAllProducts(): Promise<ResponseDTO> {
     try {
       // Fetch all products
       const productEntities = await this.productRepository.getAllProducts();
@@ -525,7 +521,7 @@ export class ProductService {
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
-        }
+        };
       });
 
       this.LOGGER.log(`Product List found successfully`);
@@ -536,8 +532,8 @@ export class ProductService {
     }
   }
 
-  async getProductsByCategory(category: string): Promise<ResponseDTO>{
-    if (category !== 'Men' && category !== 'Women' && category !== 'Kid'){
+  async getProductsByCategory(category: string): Promise<ResponseDTO> {
+    if (category !== 'Men' && category !== 'Women' && category !== 'Kid') {
       throw new BadRequestException('Invalid category');
     }
 
@@ -561,7 +557,7 @@ export class ProductService {
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
-        }
+        };
       });
 
       this.LOGGER.log(`Product List found successfully`);
@@ -593,7 +589,7 @@ export class ProductService {
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
-        }
+        };
       });
 
       this.LOGGER.log(`Product List found successfully`);
@@ -613,7 +609,7 @@ export class ProductService {
       // Fetch Mens products
       const productEntities = await this.productRepository.getProductsByCategoryAndCount(category, count);
 
-      const productList = productEntities.map(productEntity => {
+      const productList = productEntities.map((productEntity) => {
         return {
           id: productEntity.id,
           name: productEntity.name,
@@ -629,7 +625,7 @@ export class ProductService {
           modifyBy: productEntity.modifyBy,
           createDate: productEntity.createDate,
           modifyDate: productEntity.modifyDate,
-        }
+        };
       });
 
       this.LOGGER.log(`Product List found successfully`);
@@ -640,39 +636,39 @@ export class ProductService {
     }
   }
 
-  async getPopularProductsForAdmin(): Promise<ResponseDTO> {
-      try {
-          // Fetch popular products
-          const productEntities = await this.productRepository.getPopularProductsForAdmin();
+  async getPopularProductsForAdmin(paginationDTO: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      // Fetch popular products
+      const { productEntities, totalRows } = await this.productRepository.getPopularProductsForAdmin(paginationDTO);
 
-          const productList = productEntities.map(productEntity => {
-            // Determine the category based on the productCategory relation
-            let category = '';
-            const categoryNames = productEntity.productCategory.map(pc => pc.category?.name);
+      const productList = productEntities.map((productEntity: ProductEntity) => {
+        // Determine the category based on the productCategory relation
+        let category = '';
+        const categoryNames = productEntity.productCategory.map((pc) => pc.category?.name);
 
-            if (categoryNames.includes('Men')) {
-              category = 'Men';
-            } else if (categoryNames.includes('Women')) {
-              category = 'Women';
-            } else if (categoryNames.includes('Kid')) {
-              category = 'Kid';
-            }
+        if (categoryNames.includes('Men')) {
+          category = 'Men';
+        } else if (categoryNames.includes('Women')) {
+          category = 'Women';
+        } else if (categoryNames.includes('Kid')) {
+          category = 'Kid';
+        }
 
-            return {
-                id: productEntity.id,
-                name: productEntity.name,
-                itemCode: productEntity.itemCode,
-                category: category,
-                sales: this.getSalesByProductId(productEntity.id),
-            }
-          });
+        return {
+          id: productEntity.id,
+          name: productEntity.name,
+          itemCode: productEntity.itemCode,
+          category: category,
+          sales: this.getSalesByProductId(productEntity.id),
+        };
+      });
 
-          this.LOGGER.log(`Product List found successfully`);
-          return new ResponseDTO(200, 'Product List found successfully', productList);
-      } catch (error){
-          this.LOGGER.error(`Failed to get product List: ${error.message}`);
-          throw error;
-      }
+      this.LOGGER.log(`Product List found successfully`);
+      return new ResponseDTO(200,'Product List found successfully', {productList, totalRows});
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product List: ${error.message}`);
+      throw error;
+    }
   }
 
   async getSalesByProductId(productId: number): Promise<number> {
@@ -689,5 +685,4 @@ export class ProductService {
       throw error;
     }
   }
-  
 }
