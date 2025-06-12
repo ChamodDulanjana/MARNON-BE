@@ -199,4 +199,35 @@ export class ProductRepository{
       .take(count)
       .getMany();
   }
+
+  async getPopularProductsForAdmin(): Promise<ProductEntity[]> {
+    return this.productRepository.createQueryBuilder('product')
+    .leftJoin('product.userProduct', 'userProduct')
+    .leftJoinAndSelect('product.productCategory', 'productCategory')
+    .leftJoinAndSelect('productCategory.category', 'category')
+    .where('product.isActive = :isActive', { isActive: true })
+    .groupBy('product.id')
+    .addGroupBy('productCategory.id')
+    .addGroupBy('category.id')
+    .addGroupBy('productCategory.product')
+    .select([
+      'product',
+      'productCategory',
+      'category',
+      'COUNT(userProduct.id) AS userProductCount'
+    ])
+    .orderBy('userProductCount', 'DESC')
+    .getRawAndEntities()
+    .then(result => result.entities);
+  }
+
+  async getSalesByProductId(productId: number): Promise<number> {
+    const result = await this.dataSource.query(`
+      SELECT COUNT(*) as salesCount
+      FROM user_product
+      WHERE product_id = ?
+    `, [productId]);
+
+    return parseInt(result[0].salesCount, 10);
+  }
 }

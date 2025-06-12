@@ -639,4 +639,55 @@ export class ProductService {
       throw error;
     }
   }
+
+  async getPopularProductsForAdmin(): Promise<ResponseDTO> {
+      try {
+          // Fetch popular products
+          const productEntities = await this.productRepository.getPopularProductsForAdmin();
+
+          const productList = productEntities.map(productEntity => {
+            // Determine the category based on the productCategory relation
+            let category = '';
+            const categoryNames = productEntity.productCategory.map(pc => pc.category?.name);
+
+            if (categoryNames.includes('Men')) {
+              category = 'Men';
+            } else if (categoryNames.includes('Women')) {
+              category = 'Women';
+            } else if (categoryNames.includes('Kid')) {
+              category = 'Kid';
+            }
+
+            return {
+                id: productEntity.id,
+                name: productEntity.name,
+                itemCode: productEntity.itemCode,
+                category: category,
+                sales: this.getSalesByProductId(productEntity.id),
+            }
+          });
+
+          this.LOGGER.log(`Product List found successfully`);
+          return new ResponseDTO(200, 'Product List found successfully', productList);
+      } catch (error){
+          this.LOGGER.error(`Failed to get product List: ${error.message}`);
+          throw error;
+      }
+  }
+
+  async getSalesByProductId(productId: number): Promise<number> {
+    // Check if the product exists
+    const productEntity = await this.productRepository.getById(productId);
+    if (!productEntity) {
+      throw new NotFoundException(['Product not found']);
+    }
+
+    try {
+      // Fetch sales data for the product
+      return await this.productRepository.getSalesByProductId(productId);
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 }

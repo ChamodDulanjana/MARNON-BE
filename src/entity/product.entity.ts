@@ -31,6 +31,9 @@ export class ProductEntity extends BaseEntity{
   })
   newPrice: number;
 
+  @Column({name: 'item_code'})
+  itemCode: string;
+
   @Column({name: 'color'})
   color: string;
 

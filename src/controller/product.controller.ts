@@ -142,4 +142,26 @@ export class ProductController{
       throw error;
     }
   }
+
+  @Get('all/admin/popular-products')
+  async getPopularProductsForAdmin(): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log('Received request to get popular products for admin');
+      return await this.productService.getPopularProductsForAdmin();
+    } catch (error) {
+      this.LOGGER.error(`Failed to get popular products for admin: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @Get('all/product-sales/:id')
+  async getSalesByProductId(@Param('id') id: number): Promise<number> {
+    try {
+      this.LOGGER.log(`Received request to get sales by product ID ${id}`);
+      return await this.productService.getSalesByProductId(id);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get sales by product ID: ${error.message}`);
+      throw error;
+    }
+  }
 }
