@@ -144,7 +144,9 @@ export class ProductController{
     }
   }
 
-  @Get('all/admin/popular-products')
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('all/admin/popular-products')
   async getPopularProductsForAdmin(@Body() paginationDTO: PaginationDTO): Promise<ResponseDTO> {
     try {
       this.LOGGER.log('Received request to get popular products for admin');
@@ -155,6 +157,8 @@ export class ProductController{
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
   @Get('all/product-sales/:id')
   async getSalesByProductId(@Param('id') id: number): Promise<number> {
     try {
@@ -165,4 +169,18 @@ export class ProductController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Get('all/product/sales/by-month-year')
+  async getProductSalesByMonthAndYear(@Query('month') month: number, @Query('year') year: number): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get products by month ${month} and year ${year}`);
+      return await this.productService.getProductSalesByMonthAndYear(month, year);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get products by month and year: ${error.message}`);
+      throw error;
+    }
+  }
+
 }

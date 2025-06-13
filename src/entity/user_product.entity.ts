@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { Exclude } from 'class-transformer';
 import { ProductEntity } from './product.entity';
@@ -7,6 +7,9 @@ import { ProductEntity } from './product.entity';
 export class UserProductEntity{
   @PrimaryGeneratedColumn({ type: 'bigint' })
   id: number;
+
+  @CreateDateColumn({ name: 'create_date', type: 'timestamp', nullable: false })
+  createDate: Date;
 
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;

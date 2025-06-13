@@ -641,27 +641,32 @@ export class ProductService {
       // Fetch popular products
       const { productEntities, totalRows } = await this.productRepository.getPopularProductsForAdmin(paginationDTO);
 
-      const productList = productEntities.map((productEntity: ProductEntity) => {
-        // Determine the category based on the productCategory relation
-        let category = '';
-        const categoryNames = productEntity.productCategory.map((pc) => pc.category?.name);
+      const productList = await Promise.all(
+        productEntities.map(async (productEntity: ProductEntity) => {
+          // Determine the category
+          let category = '';
+          const categoryNames = productEntity.productCategory.map((pc) => pc.category?.name);
 
-        if (categoryNames.includes('Men')) {
-          category = 'Men';
-        } else if (categoryNames.includes('Women')) {
-          category = 'Women';
-        } else if (categoryNames.includes('Kid')) {
-          category = 'Kid';
-        }
+          if (categoryNames.includes('Men')) {
+            category = 'Men';
+          } else if (categoryNames.includes('Women')) {
+            category = 'Women';
+          } else if (categoryNames.includes('Kid')) {
+            category = 'Kid';
+          }
 
-        return {
-          id: productEntity.id,
-          name: productEntity.name,
-          itemCode: productEntity.itemCode,
-          category: category,
-          sales: this.getSalesByProductId(productEntity.id),
-        };
-      });
+          // Await sales count
+          const sales = await this.getSalesByProductId(productEntity.id);
+
+          return {
+            id: productEntity.id,
+            name: productEntity.name,
+            itemCode: productEntity.itemCode,
+            category,
+            sales,
+          };
+        })
+      );
 
       this.LOGGER.log(`Product List found successfully`);
       return new ResponseDTO(200,'Product List found successfully', {productList, totalRows});
@@ -682,6 +687,26 @@ export class ProductService {
       // Fetch sales data for the product
       return await this.productRepository.getSalesByProductId(productId);
     } catch (error) {
+      throw error;
+    }
+  }
+
+  async getProductSalesByMonthAndYear(month: number, year: number): Promise<ResponseDTO> {
+    if (month < 1 || month > 12) {
+      throw new BadRequestException('Invalid month');
+    }
+    if (year < 2000 || year > new Date().getFullYear()) {
+      throw new BadRequestException('Invalid year');
+    }
+
+    try {
+      // Fetch products by month and year
+      const data = await this.productRepository.getProductSalesByMonthAndYear(month, year);
+
+      this.LOGGER.log(`Product sales data found successfully for ${month}/${year}`);
+      return new ResponseDTO(200, `Product sales data found successfully for ${month}/${year}`, data);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get product sales data: ${error.message}`);
       throw error;
     }
   }

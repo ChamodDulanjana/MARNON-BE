@@ -4,12 +4,17 @@ import { ProductEntity } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 import { PaginationDTO } from '../dto/pagination.dto';
+import { UserProductEntity } from '../entity/user_product.entity';
 
 @Injectable()
 export class ProductRepository {
   constructor(
     @InjectRepository(ProductEntity) // Injecting the repository
     private readonly productRepository: Repository<ProductEntity>,
+
+    @InjectRepository(UserProductEntity) // Injecting the UserProduct repository
+    private readonly userProductRepository: Repository<UserProductEntity>,
+
     private readonly dataSource: DataSource, // Injecting the data source
   ) {}
 
@@ -37,9 +42,7 @@ export class ProductRepository {
   }
 
   // Check if the product description exists
-  async checkProductDescription(
-    description: string,
-  ): Promise<ProductEntity | null> {
+  async checkProductDescription(description: string): Promise<ProductEntity | null> {
     return await this.productRepository.findOne({
       where: { description: description },
     });
@@ -274,5 +277,30 @@ export class ProductRepository {
     );
 
     return parseInt(result[0].salesCount, 10);
+  }
+
+  async getProductSalesByMonthAndYear(month: number, year: number): Promise<any[]> {
+    const result = await this.userProductRepository
+      .createQueryBuilder('userProduct')
+      .innerJoin('userProduct.product', 'product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .select('category.name', 'category')
+      .addSelect('COUNT(userProduct.id)', 'sales')
+      .where('MONTH(userProduct.createDate) = :month', { month })
+      .andWhere('YEAR(userProduct.createDate) = :year', { year })
+      .andWhere('userProduct.isActive = true')
+      .andWhere('product.isActive = true')
+      .andWhere('productCategory.isActive = true')
+      .groupBy('category.name')
+      .getRawMany();
+
+    // Convert result to desired format
+    return result
+      .filter(row => row.category === 'Men' || row.category === 'Women' || row.category === 'Kid')
+      .map(row => ({
+        category: row.category,
+        sales: parseInt(row.sales, 10),
+      }));
   }
 }
