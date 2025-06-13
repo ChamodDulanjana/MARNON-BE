@@ -183,4 +183,16 @@ export class ProductController{
     }
   }
 
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Get('all/sales/in-months')
+  async getAllSalesInMonths(){
+    try {
+      this.LOGGER.log('Received request to get all sales in months');
+      return await this.productService.getAllSalesInMonths();
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sales in months: ${error.message}`);
+      throw error;
+    }
+  }
 }

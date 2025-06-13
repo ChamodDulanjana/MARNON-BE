@@ -295,12 +295,88 @@ export class ProductRepository {
       .groupBy('category.name')
       .getRawMany();
 
-    // Convert result to desired format
-    return result
+    // If no results, return empty array
+    if (result.length === 0){
+      return [];
+    }
+
+    const expectedCategories = ['Men', 'Women', 'Kid'];
+
+    // Ensure all expected categories are present in the result
+    const output: {category: string, sales: number}[] =  result
       .filter(row => row.category === 'Men' || row.category === 'Women' || row.category === 'Kid')
       .map(row => ({
         category: row.category,
-        sales: parseInt(row.sales, 10),
-      }));
+        sales: row.sales ? parseInt(row.sales, 10) : 0,
+    }));
+
+    // Add missing categories with 0 sales
+    expectedCategories.forEach(category => {
+      if (!output.find(row => row.category === category)) {
+        output.push({ category, sales: 0 });
+      }
+    });
+
+    return output;
+  }
+
+  async getAllSalesInMonths(): Promise<any[]> {
+    const result = await this.userProductRepository
+      .createQueryBuilder('userProduct')
+      .innerJoin('userProduct.product', 'product')
+      .innerJoin('product.productCategory', 'productCategory')
+      .innerJoin('productCategory.category', 'category')
+      .select("MONTH(userProduct.createDate)", "monthNumber")
+      .addSelect("MONTHNAME(userProduct.createDate)", "month")
+      .addSelect("category.name", "category")
+      .addSelect("COUNT(userProduct.id)", "sales")
+      .where("userProduct.isActive = true")
+      .andWhere("product.isActive = true")
+      .andWhere("productCategory.isActive = true")
+      .groupBy("monthNumber, month, category.name")
+      .orderBy("monthNumber", "ASC")
+      .getRawMany();
+
+    const monthMap: Record<string, any> = {};
+
+    result.forEach(row => {
+      const month = row.month;
+      const category = row.category;
+      const sales = parseInt(row.sales, 10);
+
+      if (!monthMap[month]) {
+        // Initialize month entry with 0s
+        monthMap[month] = {
+          month,
+          men: 0,
+          women: 0,
+          kid: 0,
+        };
+      }
+
+      const key = category.toLowerCase();
+      if (['men', 'women', 'kid'].includes(key)) {
+        monthMap[month][key] = sales;
+      }
+    });
+
+    // Ensure all 12 months are included even if empty
+    const monthsInYear = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December',
+    ];
+
+    const finalResult = monthsInYear.map(month => {
+      return (
+        monthMap[month] || {
+          month,
+          men: 0,
+          women: 0,
+          kid: 0,
+        }
+      );
+    });
+
+    return finalResult;
   }
 }

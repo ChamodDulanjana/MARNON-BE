@@ -710,4 +710,17 @@ export class ProductService {
       throw error;
     }
   }
+
+  async getAllSalesInMonths(){
+    try {
+      // Fetch all sales data in months
+      const salesData = await this.productRepository.getAllSalesInMonths();
+
+      this.LOGGER.log(`All sales data found successfully`);
+      return new ResponseDTO(200, 'All sales data found successfully', salesData);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sales data: ${error.message}`);
+      throw error;
+    }
+  }
 }
