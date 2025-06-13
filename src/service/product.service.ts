@@ -714,10 +714,107 @@ export class ProductService {
   async getAllSalesInMonths(){
     try {
       // Fetch all sales data in months
-      const salesData = await this.productRepository.getAllSalesInMonths();
+      const result = await this.productRepository.getAllSalesInMonths();
+
+      const monthMap: Record<string, any> = {};
+
+      result.forEach(row => {
+        const month = row.month;
+        const category = row.category;
+        const sales = parseInt(row.sales, 10);
+
+        if (!monthMap[month]) {
+          // Initialize month entry with 0s
+          monthMap[month] = {
+            month,
+            men: 0,
+            women: 0,
+            kid: 0,
+          };
+        }
+
+        const key = category.toLowerCase();
+        if (['men', 'women', 'kid'].includes(key)) {
+          monthMap[month][key] = sales;
+        }
+      });
+
+      // Ensure all 12 months are included even if empty
+      const monthsInYear = [
+        'January', 'February', 'March', 'April', 'May', 'June',
+        'July', 'August', 'September', 'October', 'November', 'December',
+      ];
+
+      const finalResult = monthsInYear.map(month => {
+        return (
+          monthMap[month] || {
+            month,
+            men: 0,
+            women: 0,
+            kid: 0,
+          }
+        );
+      });
 
       this.LOGGER.log(`All sales data found successfully`);
-      return new ResponseDTO(200, 'All sales data found successfully', salesData);
+      return new ResponseDTO(200, 'All sales data found successfully', finalResult);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sales data: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getAllSalesInDays(numberOfDays: number){
+    if (numberOfDays < 7 || numberOfDays > 90) {
+      throw new BadRequestException('Number of days must be between 7 and 90');
+    }
+
+    try {
+      // Fetch all sales data in days
+      const result: {category: string, date: string, sales: string}[]
+        = await this.productRepository.getAllSalesInDays(numberOfDays);
+
+      // Build map of date to sales by category
+      const dateMap: Record<string, any> = {};
+
+      result.forEach(row => {
+        const date = row.date;
+        const category = row.category.toLowerCase();
+        const sales = parseInt(row.sales, 10);
+
+        if (!dateMap[date]) {
+          dateMap[date] = {
+            date,
+            men: 0,
+            women: 0,
+            kid: 0,
+          };
+        }
+
+        if (['men', 'women', 'kid'].includes(category)) {
+          dateMap[date][category] = sales;
+        }
+      });
+
+      // Generate the past N dates even if there is no data for some
+      const finalResult: any[] = [];
+      for (let i = numberOfDays - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const formattedDate = date.toISOString().split('T')[0]; // yyyy-mm-dd
+
+        finalResult.push(
+          dateMap[formattedDate] || {
+            date: formattedDate,
+            men: 0,
+            women: 0,
+            kid: 0,
+          }
+        );
+      }
+
+      this.LOGGER.log(`All sales data found successfully for the last ${numberOfDays} days`);
+      return new ResponseDTO(200, `All sales data found successfully for the last ${numberOfDays} days`, finalResult);
     } catch (error) {
       this.LOGGER.error(`Failed to get all sales data: ${error.message}`);
       throw error;

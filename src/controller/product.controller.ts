@@ -195,4 +195,17 @@ export class ProductController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Get('all/sales/in-days/:numberOfDays')
+  async getAllSalesInDays(@Param('numberOfDays') numberOfDays: number): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get all sales in last ${numberOfDays} days`);
+      return await this.productService.getAllSalesInDays(numberOfDays);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sales in last ${numberOfDays} days: ${error.message}`);
+      throw error;
+    }
+  }
 }
