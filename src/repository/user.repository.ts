@@ -2,17 +2,17 @@ import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../entity/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { RoleEnum } from '../common/enums/role.enum';
 
 @Injectable()
-export class UserRepository{
+export class UserRepository {
   constructor(
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
-  ) {
-  }
+  ) {}
 
   async createUser(user: UserEntity): Promise<UserEntity> {
-      return this.userRepository.save(user);
+    return this.userRepository.save(user);
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
@@ -41,5 +41,9 @@ export class UserRepository{
   // Check if user contact exists
   async isContactExist(contact: string): Promise<UserEntity | null> {
     return await this.userRepository.findOne({ where: { contact: contact } });
+  }
+
+  async getAllCustomersCount(): Promise<number> {
+    return this.userRepository.count({ where: { role: RoleEnum.USER } });
   }
 }

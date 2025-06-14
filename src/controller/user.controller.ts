@@ -148,4 +148,17 @@ export class UserController {
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Get('all/customers/count')
+  async getAllCustomersCount(): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get all customers count`);
+      return await this.userService.getAllCustomersCount();
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all customers count: ${error.message}`);
+      throw error;
+    }
+  }
 }

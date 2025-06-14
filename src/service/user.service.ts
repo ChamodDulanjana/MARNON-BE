@@ -214,4 +214,16 @@ export class UserService{
       throw error;
     }
   }
+
+  async getAllCustomersCount(): Promise<ResponseDTO> {
+    try {
+      const count = await this.userRepository.getAllCustomersCount();
+
+      this.LOGGER.log(`Total customers count: ${count}`);
+      return new ResponseDTO(200, `Total customers count: ${count}`, count);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all customers count: ${error.message}`);
+      throw error;
+    }
+  }
 }
