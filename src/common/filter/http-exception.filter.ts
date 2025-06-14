@@ -16,51 +16,53 @@ export class HttpExceptionFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+
     let status = 500;
     let message = 'Internal Server Error';
 
+    // Handle HttpExceptions (like BadRequestException, etc.)
     if (exception instanceof HttpException) {
       status = exception.getStatus();
-      message = exception.message;
+      const exceptionResponse = exception.getResponse();
+      if (typeof exceptionResponse === 'object' && exceptionResponse !== null) {
+        const err = exceptionResponse as any;
+        message = err.message || exception.message;
+      } else {
+        message = exception.message;
+      }
     }
 
-    //validation exception
-    if (exception instanceof ValidationException) {
+    // Custom validation exception
+    else if (exception instanceof ValidationException) {
       status = 400;
       message = `Validation error: ${exception.message}`;
     }
 
-    // Handle database errors
-    if (exception instanceof QueryFailedError) {
+    // TypeORM error
+    else if (exception instanceof QueryFailedError) {
       status = 400;
       message = `Database error: ${exception.message}`;
     }
 
-    // Handle not found errors
-    if (exception instanceof NotFoundException) {
+    // Not found
+    else if (exception instanceof NotFoundException) {
       status = 404;
       message = `Not Found: ${exception.message}`;
     }
 
-    // Handle already exists errors
-    if (exception instanceof AlreadyExistException) {
+    // Already exists
+    else if (exception instanceof AlreadyExistException) {
       status = 409;
       message = `Already exists: ${exception.message}`;
     }
 
-    // Handle BadRequest errors properly
-    if (exception instanceof BadRequestException) {
+    // Fallback generic Error
+    else if (exception instanceof Error) {
       status = 400;
-      message = ` Exception: ${exception.message}`;
-    }
-
-    // Handle generic errors properly
-    if (exception instanceof Error) {
-      message = exception.message;
+      message = `Failed to create user: ${exception.message}`;
     }
 
     const errorResponse = new ResponseDTO(status, message);
-
     response.status(status).json(errorResponse);
   }
 }

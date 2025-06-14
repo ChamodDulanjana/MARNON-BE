@@ -32,7 +32,7 @@ export class AuthController{
       return await this.authService.signIn(requestDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to login user: ${error.message}`);
-      throw error;
+      return new ResponseDTO(500, `Failed to login user: ${error.message}`);
     }
   }
 
@@ -54,7 +54,7 @@ export class AuthController{
       return await this.authService.signUp(userDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to create user: ${error.message}`);
-      throw error;
+      return new ResponseDTO(500, `Failed to create user: ${error.message}`);
     }
   }
 }
