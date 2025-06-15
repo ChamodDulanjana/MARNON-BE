@@ -30,7 +30,7 @@ export class AuthController{
       return await this.authService.signIn(requestDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to login user: ${error.message}`);
-      return new ResponseDTO(500, `Failed to login user: ${error.message}`);
+      throw error; // Let the global exception filter handle it
     }
   }
 
@@ -50,7 +50,7 @@ export class AuthController{
       return await this.authService.signUp(userDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to create user: ${error.message}`);
-      return new ResponseDTO(500, `Failed to create user: ${error.message}`);
+      throw error; // Let the global exception filter handle it
     }
   }
 }

@@ -1,4 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  Logger,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { RequestDTO } from '../dto/req&resp/request.dto';
 import { UserEntity } from '../entity/user.entity';
 import { JwtService } from '@nestjs/jwt';
@@ -7,6 +12,7 @@ import { UserRepository } from '../repository/user.repository';
 import { UserDTO } from '../dto/user.dto';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { RoleEnum } from '../common/enums/role.enum';
+import { AlreadyExistException } from '../common/exception/alreadyExist.exception';
 
 @Injectable()
 export class AuthService {
@@ -35,31 +41,29 @@ export class AuthService {
         role: user.role,
       }); // Return JWT token
     }
-    // throw new UnauthorizedException('Invalid credentials');
-    return new ResponseDTO(401, 'Invalid credentials');
+    throw new UnauthorizedException('Please check your email and password.');
   }
 
   // Create user
   async signUp(userDTO: UserDTO): Promise<ResponseDTO> {
-    try {
       // Check if user email exists
       if (await this.userRepository.isEmailExist(userDTO.email)) {
-        this.LOGGER.warn(`Email already exists: ${userDTO.email}`);
-        return new ResponseDTO(409, 'Email already exists');
+        throw new AlreadyExistException(['Email already exists']);
       }
 
       // Check if user contact exists
       if (await this.userRepository.isContactExist(userDTO.contact)) {
         this.LOGGER.warn(`Contact already exists: ${userDTO.contact}`);
-        return new ResponseDTO(409, 'Contact already exists');
+        throw new AlreadyExistException(['Contact already exists']);
       }
 
       // Check if user role is valid
       if (userDTO.role !== RoleEnum.USER) {
         this.LOGGER.warn(`Invalid role specified: ${userDTO.role}`);
-        return new ResponseDTO(400, 'Invalid role specified');
+        throw new BadRequestException(['Invalid role specified']);
       }
 
+    try {
       const user = new UserEntity();
       user.name = userDTO.name;
       user.email = userDTO.email;
@@ -77,7 +81,7 @@ export class AuthService {
       return new ResponseDTO(201, 'User created successfully');
     } catch (error) {
       this.LOGGER.error(`Failed to create user: ${error.message}`);
-      return new ResponseDTO(500, `Failed to create user: ${error.message}`);
+      throw error; // Propagate the error for further handling
     }
   }
 }

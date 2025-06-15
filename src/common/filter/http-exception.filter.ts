@@ -47,19 +47,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // Not found
     else if (exception instanceof NotFoundException) {
       status = 404;
-      message = `Not Found: ${exception.message}`;
+      message = `${exception.message}`;
     }
 
     // Already exists
     else if (exception instanceof AlreadyExistException) {
       status = 409;
-      message = `Already exists: ${exception.message}`;
+      message = `${exception.message}`;
     }
 
     // Fallback generic Error
     else if (exception instanceof Error) {
       status = 400;
-      message = `Failed to create user: ${exception.message}`;
+      message = `${exception.message}`;
     }
 
     const errorResponse = new ResponseDTO(status, message);
