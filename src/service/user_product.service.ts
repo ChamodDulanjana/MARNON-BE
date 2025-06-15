@@ -12,7 +12,7 @@ export class UserProductService{
   ) {
   }
 
-  async getProductSalesByMonthAndYear(month: number, year: number): Promise<ResponseDTO> {
+  async getSalesCountByMonthAndYear(month: number, year: number): Promise<ResponseDTO> {
     if (month < 1 || month > 12) {
       throw new BadRequestException('Invalid month');
     }
@@ -22,7 +22,7 @@ export class UserProductService{
 
     try {
       // Fetch products by month and year
-      const result = await this.userProductRepository.getProductSalesByMonthAndYear(month, year);
+      const result = await this.userProductRepository.getSalesCountByMonthAndYear(month, year);
 
       let output: { category: string; sales: number }[] = [];
 
@@ -56,10 +56,10 @@ export class UserProductService{
     }
   }
 
-  async getAllSalesInMonths(){
+  async getSalesCountOfAllMonths(){
     try {
       // Fetch all sales data in months
-      const result = await this.userProductRepository.getAllSalesInMonths();
+      const result = await this.userProductRepository.getSalesCountOfAllMonths();
 
       const monthMap: Record<string, any> = {};
 
@@ -109,7 +109,7 @@ export class UserProductService{
     }
   }
 
-  async getAllSalesInDays(numberOfDays: number){
+  async getSalesCountOfDayRange(numberOfDays: number){
     if (numberOfDays < 7 || numberOfDays > 90) {
       throw new BadRequestException('Number of days must be between 7 and 90');
     }
@@ -117,7 +117,7 @@ export class UserProductService{
     try {
       // Fetch all sales data in days
       const result: {category: string, date: string, sales: string}[]
-        = await this.userProductRepository.getAllSalesInDays(numberOfDays);
+        = await this.userProductRepository.getSalesCountOfDayRange(numberOfDays);
 
       // Build map of date to sales by category
       const dateMap: Record<string, any> = {};
@@ -162,6 +162,43 @@ export class UserProductService{
       return new ResponseDTO(200, `All sales data found successfully for the last ${numberOfDays} days`, finalResult);
     } catch (error) {
       this.LOGGER.error(`Failed to get all sales data: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getSalesCountByDate(date: string): Promise<ResponseDTO> {
+    if (!date || isNaN(Date.parse(date))) {
+      throw new BadRequestException('Invalid date format');
+    }
+
+    try {
+      // Fetch sales count by date
+      const salesCount = await this.userProductRepository.getSalesCountByDate(date);
+
+      this.LOGGER.log(`Sales count found successfully for date ${date}`);
+      return new ResponseDTO(200, `Sales count found successfully for date ${date}`,  salesCount );
+    } catch (error) {
+      this.LOGGER.error(`Failed to get sales count by date: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getMonthlySales(year: number, month: number): Promise<ResponseDTO> {
+    if (month < 1 || month > 12) {
+      throw new BadRequestException('Invalid month');
+    }
+    if (year < 2000 || year > new Date().getFullYear()) {
+      throw new BadRequestException('Invalid year');
+    }
+
+    try {
+      // Fetch monthly sales
+      const result = await this.userProductRepository.getMonthlySales(year, month);
+
+      this.LOGGER.log(`Monthly sales data found successfully for ${month}/${year}`);
+      return new ResponseDTO(200, `Monthly sales data found successfully for ${month}/${year}`, result);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get monthly sales data: ${error.message}`);
       throw error;
     }
   }

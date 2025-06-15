@@ -1,17 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserProductEntity } from '../entity/user_product.entity';
-import { Repository } from 'typeorm';
+import { DataSource, Repository } from 'typeorm';
 
 @Injectable()
 export class UserProductRepository{
   constructor(
     @InjectRepository(UserProductEntity) // Injecting the UserProduct repository
     private readonly userProductRepository: Repository<UserProductEntity>,
+    private readonly dataSource: DataSource, // Injecting the data source
   ) {
   }
 
-  async getProductSalesByMonthAndYear(month: number, year: number): Promise<any[]> {
+  async getSalesCountByMonthAndYear(month: number, year: number): Promise<any[]> {
     const result = await this.userProductRepository
       .createQueryBuilder('userProduct')
       .innerJoin('userProduct.product', 'product')
@@ -30,7 +31,7 @@ export class UserProductRepository{
     return result;
   }
 
-  async getAllSalesInMonths(): Promise<any[]> {
+  async getSalesCountOfAllMonths(): Promise<any[]> {
     const result = await this.userProductRepository
       .createQueryBuilder('userProduct')
       .innerJoin('userProduct.product', 'product')
@@ -50,7 +51,7 @@ export class UserProductRepository{
     return result;
   }
 
-  async getAllSalesInDays(numberOfDays: number): Promise<any[]> {
+  async getSalesCountOfDayRange(numberOfDays: number): Promise<any[]> {
     const categories = ['Men', 'Women', 'Kid'];
 
     const result = await this.userProductRepository
@@ -72,5 +73,31 @@ export class UserProductRepository{
       .getRawMany();
 
     return result;
+  }
+
+  async getSalesCountByDate(date: string){
+    const result = await this.userProductRepository
+      .createQueryBuilder('userProduct')
+      .select('COUNT(userProduct.id)', 'salesCount')
+      .where('DATE(userProduct.createDate) = :date', { date })
+      .andWhere('userProduct.isActive = true')
+      .getRawOne();
+
+    return !result ? 0 : parseInt(result.salesCount, 10);
+  }
+
+  async getMonthlySales(year: number, month: number){
+    // fetch total monthly sales by total new_price of all products sold in that month
+    const result = await this.userProductRepository
+      .createQueryBuilder('userProduct')
+      .innerJoin('userProduct.product', 'product')
+      .select('SUM(product.newPrice)', 'totalSales')
+      .where('YEAR(userProduct.createDate) = :year', { year })
+      .andWhere('MONTH(userProduct.createDate) = :month', { month })
+      .andWhere('userProduct.isActive = true')
+      .andWhere('product.isActive = true')
+      .getRawOne();
+
+    return !result ? 0 : parseFloat(result.totalSales);
   }
 }
