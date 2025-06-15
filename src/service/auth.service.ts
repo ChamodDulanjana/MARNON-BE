@@ -44,16 +44,19 @@ export class AuthService {
     try {
       // Check if user email exists
       if (await this.userRepository.isEmailExist(userDTO.email)) {
+        this.LOGGER.warn(`Email already exists: ${userDTO.email}`);
         return new ResponseDTO(409, 'Email already exists');
       }
 
       // Check if user contact exists
       if (await this.userRepository.isContactExist(userDTO.contact)) {
+        this.LOGGER.warn(`Contact already exists: ${userDTO.contact}`);
         return new ResponseDTO(409, 'Contact already exists');
       }
 
       // Check if user role is valid
       if (userDTO.role !== RoleEnum.USER) {
+        this.LOGGER.warn(`Invalid role specified: ${userDTO.role}`);
         return new ResponseDTO(400, 'Invalid role specified');
       }
 

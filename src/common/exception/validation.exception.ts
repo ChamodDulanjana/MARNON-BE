@@ -7,6 +7,6 @@ export class ValidationException extends Error {
   constructor(validationErrors: string[]) {
       super(validationErrors.join(', '));
       // Log the validation errors
-      this.LOGGER.error(`Validation failed: ${this.message}`);
+      this.LOGGER.warn(`Validation failed: ${this.message}`);
   }
 }

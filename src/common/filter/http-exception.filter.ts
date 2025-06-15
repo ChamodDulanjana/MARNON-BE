@@ -35,7 +35,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // Custom validation exception
     else if (exception instanceof ValidationException) {
       status = 400;
-      message = `Validation error: ${exception.message}`;
+      message = `${exception.message}`;
     }
 
     // TypeORM error

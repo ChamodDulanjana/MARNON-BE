@@ -19,11 +19,9 @@ export class AuthController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
   async signIn(@Body() requestDTO: RequestDTO): Promise<ResponseDTO> {
@@ -41,11 +39,9 @@ export class AuthController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
   async signUp(@Body() userDTO: UserDTO): Promise<ResponseDTO> {
