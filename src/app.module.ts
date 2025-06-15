@@ -9,6 +9,7 @@ import { ProductModule } from './module/product.module';
 import { SizeModule } from './module/size.module';
 import { CategoryModule } from './module/category.module';
 import { HomeDisplayImgModule } from './module/home-display-img.module';
+import { UserProductModule } from './module/user_product.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { HomeDisplayImgModule } from './module/home-display-img.module';
     SizeModule,
     CategoryModule,
     HomeDisplayImgModule,
+    UserProductModule
   ],
   controllers: [AppController],
   providers: [AppService],

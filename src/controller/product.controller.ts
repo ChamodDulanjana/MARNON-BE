@@ -169,43 +169,4 @@ export class ProductController{
       throw error;
     }
   }
-
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
-  @Get('all/product/sales/by-month-year')
-  async getProductSalesByMonthAndYear(@Query('month') month: number, @Query('year') year: number): Promise<ResponseDTO> {
-    try {
-      this.LOGGER.log(`Received request to get products by month ${month} and year ${year}`);
-      return await this.productService.getProductSalesByMonthAndYear(month, year);
-    } catch (error) {
-      this.LOGGER.error(`Failed to get products by month and year: ${error.message}`);
-      throw error;
-    }
-  }
-
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
-  @Get('all/sales/in-months')
-  async getAllSalesInMonths(){
-    try {
-      this.LOGGER.log('Received request to get all sales in months');
-      return await this.productService.getAllSalesInMonths();
-    } catch (error) {
-      this.LOGGER.error(`Failed to get all sales in months: ${error.message}`);
-      throw error;
-    }
-  }
-
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
-  @Get('all/sales/in-days/:numberOfDays')
-  async getAllSalesInDays(@Param('numberOfDays') numberOfDays: number): Promise<ResponseDTO> {
-    try {
-      this.LOGGER.log(`Received request to get all sales in last ${numberOfDays} days`);
-      return await this.productService.getAllSalesInDays(numberOfDays);
-    } catch (error) {
-      this.LOGGER.error(`Failed to get all sales in last ${numberOfDays} days: ${error.message}`);
-      throw error;
-    }
-  }
 }

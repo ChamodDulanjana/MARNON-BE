@@ -4,17 +4,12 @@ import { ProductEntity } from '../entity/product.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 import { PaginationDTO } from '../dto/pagination.dto';
-import { UserProductEntity } from '../entity/user_product.entity';
 
 @Injectable()
 export class ProductRepository {
   constructor(
     @InjectRepository(ProductEntity) // Injecting the repository
     private readonly productRepository: Repository<ProductEntity>,
-
-    @InjectRepository(UserProductEntity) // Injecting the UserProduct repository
-    private readonly userProductRepository: Repository<UserProductEntity>,
-
     private readonly dataSource: DataSource, // Injecting the data source
   ) {}
 
@@ -277,90 +272,5 @@ export class ProductRepository {
     );
 
     return parseInt(result[0].salesCount, 10);
-  }
-
-  async getProductSalesByMonthAndYear(month: number, year: number): Promise<any[]> {
-    const result = await this.userProductRepository
-      .createQueryBuilder('userProduct')
-      .innerJoin('userProduct.product', 'product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .select('category.name', 'category')
-      .addSelect('COUNT(userProduct.id)', 'sales')
-      .where('MONTH(userProduct.createDate) = :month', { month })
-      .andWhere('YEAR(userProduct.createDate) = :year', { year })
-      .andWhere('userProduct.isActive = true')
-      .andWhere('product.isActive = true')
-      .andWhere('productCategory.isActive = true')
-      .groupBy('category.name')
-      .getRawMany();
-
-    // If no results, return empty array
-    if (result.length === 0){
-      return [];
-    }
-
-    const expectedCategories = ['Men', 'Women', 'Kid'];
-
-    // Ensure all expected categories are present in the result
-    const output: {category: string, sales: number}[] =  result
-      .filter(row => row.category === 'Men' || row.category === 'Women' || row.category === 'Kid')
-      .map(row => ({
-        category: row.category,
-        sales: row.sales ? parseInt(row.sales, 10) : 0,
-    }));
-
-    // Add missing categories with 0 sales
-    expectedCategories.forEach(category => {
-      if (!output.find(row => row.category === category)) {
-        output.push({ category, sales: 0 });
-      }
-    });
-
-    return output;
-  }
-
-  async getAllSalesInMonths(): Promise<any[]> {
-    const result = await this.userProductRepository
-      .createQueryBuilder('userProduct')
-      .innerJoin('userProduct.product', 'product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .select("MONTH(userProduct.createDate)", "monthNumber")
-      .addSelect("MONTHNAME(userProduct.createDate)", "month")
-      .addSelect("category.name", "category")
-      .addSelect("COUNT(userProduct.id)", "sales")
-      .where("userProduct.isActive = true")
-      .andWhere("product.isActive = true")
-      .andWhere("productCategory.isActive = true")
-      .groupBy("monthNumber, month, category.name")
-      .orderBy("monthNumber", "ASC")
-      .getRawMany();
-
-    return result;
-  }
-
-  async getAllSalesInDays(numberOfDays: number): Promise<any[]> {
-    const categories = ['Men', 'Women', 'Kid'];
-
-    const result = await this.userProductRepository
-      .createQueryBuilder('userProduct')
-      .innerJoin('userProduct.product', 'product')
-      .innerJoin('product.productCategory', 'productCategory')
-      .innerJoin('productCategory.category', 'category')
-      .select("DATE_FORMAT(userProduct.createDate, '%Y-%m-%d')", "date")
-      .addSelect("category.name", "category")
-      .addSelect("COUNT(userProduct.id)", "sales")
-      .where("userProduct.isActive = true")
-      .andWhere("product.isActive = true")
-      .andWhere("productCategory.isActive = true")
-      .andWhere("category.isActive = true")
-      .andWhere("category.name IN (:...categories)", {categories})
-      .andWhere("userProduct.createDate >= CURDATE() - INTERVAL :days DAY", { days: numberOfDays - 1 })
-      .groupBy("DATE_FORMAT(userProduct.createDate, '%Y-%m-%d'), category.name")
-      .orderBy("date", "ASC")
-      .getRawMany();
-
-    return result;
   }
 }
