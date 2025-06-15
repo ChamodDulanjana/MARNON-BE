@@ -19,8 +19,8 @@ type ProductGet = {
   id: number;
   name: string;
   description: string;
-  oldPrice: number;
-  newPrice: number;
+  buyingPrice: number;
+  sellingPrice: number;
   color: string;
   image: {
     id: number;
@@ -91,9 +91,9 @@ export class ProductService {
       }
     }
 
-    // Limit the number of SUB images to 4
+    // Limit the number of SUB images to 3
     const subImages = productDTO.image.filter(img => img.type === 'SUB');
-    if (subImages.length > 4) {
+    if (subImages.length > 3) {
       throw new BadRequestException('Maximum 4 images can have the type ' + ImageTypeEnum.SUB);
     }
 
@@ -147,8 +147,8 @@ export class ProductService {
       const productEntity = new ProductEntity();
       productEntity.name = productDTO.name;
       productEntity.description = productDTO.description;
-      productEntity.oldPrice = productDTO.oldPrice;
-      productEntity.newPrice = productDTO.newPrice;
+      productEntity.buyingPrice = productDTO.buyingPrice;
+      productEntity.sellingPrice = productDTO.sellingPrice;
       productEntity.color = productDTO.color;
       productEntity.createBy = userName;
       productEntity.isActive = true;
@@ -321,8 +321,8 @@ export class ProductService {
       // Update the product entity
       productEntity.name = productDTO.name;
       productEntity.description = productDTO.description;
-      productEntity.oldPrice = productDTO.oldPrice;
-      productEntity.newPrice = productDTO.newPrice;
+      productEntity.buyingPrice = productDTO.buyingPrice;
+      productEntity.sellingPrice = productDTO.sellingPrice;
       productEntity.color = productDTO.color;
       productEntity.modifyBy = userName;
 
@@ -456,8 +456,8 @@ export class ProductService {
         id: productEntity.id,
         name: productEntity.name,
         description: productEntity.description,
-        oldPrice: productEntity.oldPrice,
-        newPrice: productEntity.newPrice,
+        buyingPrice: productEntity.buyingPrice,
+        sellingPrice: productEntity.sellingPrice,
         color: productEntity.color,
         image: productEntity.productImage
           .filter((productImg) => productImg.isActive)
@@ -510,8 +510,8 @@ export class ProductService {
           id: productEntity.id,
           name: productEntity.name,
           description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
+          buyingPrice: productEntity.buyingPrice,
+          sellingPrice: productEntity.sellingPrice,
           color: productEntity.color,
           image: productEntity.productImage.find(
             (productImg) => productImg.isActive && productImg.type === 'MAIN'
@@ -546,8 +546,8 @@ export class ProductService {
           id: productEntity.id,
           name: productEntity.name,
           description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
+          buyingPrice: productEntity.buyingPrice,
+          sellingPrice: productEntity.sellingPrice,
           color: productEntity.color,
           image: productEntity.productImage.find(
             (productImg) => productImg.isActive && productImg.type === 'MAIN'
@@ -578,8 +578,8 @@ export class ProductService {
           id: productEntity.id,
           name: productEntity.name,
           description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
+          buyingPrice: productEntity.buyingPrice,
+          sellingPrice: productEntity.sellingPrice,
           color: productEntity.color,
           image: productEntity.productImage.find(
             (productImg) => productImg.isActive && productImg.type === 'MAIN'
@@ -614,8 +614,8 @@ export class ProductService {
           id: productEntity.id,
           name: productEntity.name,
           description: productEntity.description,
-          oldPrice: productEntity.oldPrice,
-          newPrice: productEntity.newPrice,
+          buyingPrice: productEntity.buyingPrice,
+          sellingPrice: productEntity.sellingPrice,
           color: productEntity.color,
           image: productEntity.productImage.find(
             (productImg) => productImg.isActive && productImg.type === 'MAIN'

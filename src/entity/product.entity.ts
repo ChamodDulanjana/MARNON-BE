@@ -16,20 +16,20 @@ export class ProductEntity extends BaseEntity{
   description: string;
 
   @Column({
-    name: 'old_price',
+    name: 'buying_price',
     type: 'decimal',
     precision: 10, // total number of digits
     scale: 2       // number of digits after the decimal point
   })
-  oldPrice: number;
+  buyingPrice: number;
 
   @Column({
-    name: 'new_price',
+    name: 'selling_price',
     type: 'decimal',
     precision: 10, // total number of digits
     scale: 2       // number of digits after the decimal point
   })
-  newPrice: number;
+  sellingPrice: number;
 
   @Column({name: 'item_code'})
   itemCode: string;

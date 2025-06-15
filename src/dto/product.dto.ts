@@ -26,13 +26,13 @@ export class ProductDTO{
   @IsArray({message: 'Image must be an array'})
   image: ImageProps[];
 
-  @IsNotEmpty({message: 'Old Price is required'})
-  @IsNumber({}, {message: 'Old Price must be a number'})
-  oldPrice: number;
+  @IsNotEmpty({message: 'Buying Price is required'})
+  @IsNumber({}, {message: 'Buying Price must be a number'})
+  buyingPrice: number;
 
-  @IsNotEmpty({message: 'New Price is required'})
-  @IsNumber({}, {message: 'New Price must be a number'})
-  newPrice: number;
+  @IsNotEmpty({message: 'Selling Price is required'})
+  @IsNumber({}, {message: 'Selling Price must be a number'})
+  sellingPrice: number;
 
   @IsNotEmpty({message: 'Color is required'})
   @IsString({message: 'Color must be a string'})

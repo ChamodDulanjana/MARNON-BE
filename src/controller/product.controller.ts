@@ -40,11 +40,9 @@ export class ProductController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
   @Post()
@@ -66,11 +64,9 @@ export class ProductController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
   @Patch(':id')
