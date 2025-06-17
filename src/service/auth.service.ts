@@ -98,4 +98,17 @@ export class AuthService {
       throw error; // Propagate the error for further handling
     }
   }
+
+  // Logout
+  async logout(res: Response): Promise<ResponseDTO> {
+    // Clear the cookie by setting its maxAge to 0
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: true, // Set to true in production (HTTPS)
+      sameSite: 'lax',
+    });
+
+    this.LOGGER.log('User logged out successfully');
+    return new ResponseDTO(200, 'User logged out successfully');
+  }
 }

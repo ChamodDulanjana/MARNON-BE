@@ -1,4 +1,4 @@
-import { Body, Controller, Logger, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Logger, Patch, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { RequestDTO } from '../dto/req&resp/request.dto';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
@@ -51,6 +51,17 @@ export class AuthController{
       return await this.authService.signUp(userDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to create user: ${error.message}`);
+      throw error; // Let the global exception filter handle it
+    }
+  }
+
+  @Patch('logout')
+  async logout(@Res({ passthrough: true }) res: Response): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to logout user`);
+      return await this.authService.logout(res);
+    } catch (error) {
+      this.LOGGER.error(`Failed to logout user: ${error.message}`);
       throw error; // Let the global exception filter handle it
     }
   }
