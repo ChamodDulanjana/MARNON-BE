@@ -80,4 +80,17 @@ export class UserProductController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Get('monthly-revenue')
+  async getMonthlyRevenue(@Query('year') year: number, @Query('month') month: number): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get monthly revenue for month ${month} and year ${year}`);
+      return await this.userProductService.getMonthlyRevenue(year, month);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get monthly revenue: ${error.message}`);
+      throw error;
+    }
+  }
 }

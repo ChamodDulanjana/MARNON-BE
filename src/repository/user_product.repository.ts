@@ -87,11 +87,11 @@ export class UserProductRepository{
   }
 
   async getMonthlySales(year: number, month: number){
-    // fetch total monthly sales by total new_price of all products sold in that month
+    // fetch total monthly sales by total selling of all products sold in that month
     const result = await this.userProductRepository
       .createQueryBuilder('userProduct')
       .innerJoin('userProduct.product', 'product')
-      .select('SUM(product.newPrice)', 'totalSales')
+      .select('SUM(product.sellingPrice)', 'totalSales')
       .where('YEAR(userProduct.createDate) = :year', { year })
       .andWhere('MONTH(userProduct.createDate) = :month', { month })
       .andWhere('userProduct.isActive = true')
@@ -99,5 +99,20 @@ export class UserProductRepository{
       .getRawOne();
 
     return !result ? 0 : parseFloat(result.totalSales);
+  }
+
+  async getMonthlyRevenue(year: number, month: number): Promise<number> {
+    // fetch total monthly revenue by total sellingPrice substract totalBuyingPrice of all products sold in that month
+    const result = await this.userProductRepository
+      .createQueryBuilder('userProduct')
+      .innerJoin('userProduct.product', 'product')
+      .select('SUM(product.sellingPrice - product.buyingPrice)', 'totalRevenue')
+      .where('YEAR(userProduct.createDate) = :year', { year })
+      .andWhere('MONTH(userProduct.createDate) = :month', { month })
+      .andWhere('userProduct.isActive = true')
+      .andWhere('product.isActive = true')
+      .getRawOne();
+
+    return !result ? 0 : parseFloat(result.totalRevenue);
   }
 }

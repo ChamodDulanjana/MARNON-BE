@@ -202,4 +202,24 @@ export class UserProductService{
       throw error;
     }
   }
+
+  async getMonthlyRevenue(year: number, month: number): Promise<ResponseDTO> {
+    if (month < 1 || month > 12) {
+      throw new BadRequestException('Invalid month');
+    }
+    if (year < 2000 || year > new Date().getFullYear()) {
+      throw new BadRequestException('Invalid year');
+    }
+
+    try {
+      // Fetch monthly revenue
+      const result = await this.userProductRepository.getMonthlyRevenue(year, month);
+
+      this.LOGGER.log(`Monthly revenue data found successfully for ${month}/${year}`);
+      return new ResponseDTO(200, `Monthly revenue data found successfully for ${month}/${year}`, result);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get monthly revenue data: ${error.message}`);
+      throw error;
+    }
+  }
 }
