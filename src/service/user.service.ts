@@ -61,6 +61,35 @@ export class UserService{
     }
   }
 
+  async getUserByEmail(email: string): Promise<ResponseDTO> {
+    const userEntity = await this.userRepository.findUserByEmail(email);
+    if (!userEntity) {
+      throw new NotFoundException(['User not found']);
+    }
+
+    try {
+      const userDTO: UserGet = {
+        id: userEntity.id,
+        name: userEntity.name,
+        username: userEntity.username,
+        email: userEntity.email,
+        role: userEntity.role,
+        contact: userEntity.contact,
+        address: userEntity.address,
+        createDate: userEntity.createDate,
+        createBy: userEntity.createBy,
+        modifyDate: userEntity.modifyDate,
+        modifyBy: userEntity.modifyBy,
+      }
+
+      this.LOGGER.log(`User with email ${email} found successfully`);
+      return new ResponseDTO(200, `User with email ${email} found successfully`, userDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to find user by email: ${error.message}`);
+      throw error;
+    }
+  }
+
   async getAllUsers(): Promise<ResponseDTO> {
     try {
       const userEntities = await this.userRepository.getAllUsers();

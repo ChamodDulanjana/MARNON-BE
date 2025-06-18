@@ -1,14 +1,18 @@
 import { JwtService } from '@nestjs/jwt';
+import { Request } from 'express';
 
 export class CommonUtil{
-  public static extractTokenFromRequest(req: Request): string {
-    const token = req.headers['authorization']?.split(' ')[1];
-    return token;
-  }
+  private static jwtService = new JwtService();
 
-  public static extractUsernameFromToken(req: Request, jwtService: JwtService): string {
-    const token = req.headers['authorization']?.split(' ')[1];
-    const payload = jwtService.decode(token);
-    return payload['username'];
+  public static extractPayloadFromToken(req: Request) {
+    const token = req.cookies['access_token'];
+    const payload = this.jwtService.verify(token, {
+      secret: process.env.JWT_SECRET,
+    });
+    return {
+      userId: payload['userId'],
+      userName: payload['username'],
+      role: payload['role'],
+    }
   }
 }

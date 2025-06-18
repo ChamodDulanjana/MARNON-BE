@@ -19,10 +19,10 @@ import { RoleEnum } from '../common/enums/role.enum';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { UserDTO } from '../dto/user.dto';
-import { CommonUtil } from '../util/common-util';
-import { JwtService } from '@nestjs/jwt';
 import { ValidationException } from '../common/exception/validation.exception';
 import { UserUpdateDTO } from '../dto/user-update.dto';
+import { Request } from 'express';
+import { CommonUtil } from '../util/common-util';
 
 @Controller('user')
 export class UserController {
@@ -30,7 +30,6 @@ export class UserController {
 
   constructor(
     private readonly userService: UserService,
-    private readonly jwtService: JwtService,
   ) {
   }
 
@@ -42,6 +41,18 @@ export class UserController {
       return await this.userService.getUserById(id);
     } catch (error) {
       this.LOGGER.error(`Failed to get user: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard) // Apply JWT Guards
+  @Get('by-email/:email')
+  async getUserByEmail(@Param('email') email: string): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get user with email ${email}`);
+      return await this.userService.getUserByEmail(email);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get user by email: ${error.message}`);
       throw error;
     }
   }
@@ -85,9 +96,11 @@ export class UserController {
     },
   }))
   @Patch('regular/:id')
-  async updateByRegularUser(@Param('id') id: number, @Body() userDTO: UserUpdateDTO, @Req() req: Request): Promise<ResponseDTO> {
+  async updateByRegularUser(@Param('id') id: number,
+                            @Body() userDTO: UserUpdateDTO,
+                            @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to update user with id ${id}`);
       return await this.userService.updateByRegularUser(id, userDTO, userName);
@@ -113,7 +126,7 @@ export class UserController {
   @Patch('admin/:id')
   async updateByAdminUser(@Param('id') id: number, @Body() userDTO: UserUpdateDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to update user with id ${id}`);
       return await this.userService.updateByAdminUser(id, userDTO, userName);
@@ -139,7 +152,7 @@ export class UserController {
   @Post('createByAdmin')
   async createByAdminUser(@Body() userDTO: UserDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to create user`);
       return await this.userService.createByAdminUser(userDTO, userName);
