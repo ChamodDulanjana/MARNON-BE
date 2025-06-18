@@ -48,6 +48,20 @@ export class AuthService {
         //domain: process.env.DOMAIN, // Optional: allows sharing across subdomains
       });
 
+      // 👉 Set username in cookie
+      res.cookie('username', payload.username, {
+        secure: true, // Set to true in production (HTTPS)
+        sameSite: 'lax',
+        maxAge: this.cookieMaxAge,
+      });
+
+      // 👉 Set role in cookie
+      res.cookie('role', payload.role, {
+        secure: true, // Set to true in production (HTTPS)
+        sameSite: 'lax',
+        maxAge: this.cookieMaxAge,
+      });
+
       this.LOGGER.log(`${user.email} logged successfully`);
       return new ResponseDTO(200, `${user.email} logged successfully`, {
         userName: user.username,
@@ -55,7 +69,7 @@ export class AuthService {
         role: user.role,
       }); // Return user data along with status code
     }
-    throw new UnauthorizedException('Please check your email and password.');
+    throw new BadRequestException('Please check your email and password.');
   }
 
   // Create user
@@ -104,6 +118,16 @@ export class AuthService {
     // Clear the cookie by setting its maxAge to 0
     res.clearCookie('access_token', {
       httpOnly: true,
+      secure: true, // Set to true in production (HTTPS)
+      sameSite: 'lax',
+    });
+
+    res.clearCookie('username', {
+      secure: true, // Set to true in production (HTTPS)
+      sameSite: 'lax',
+    });
+
+    res.clearCookie('role', {
       secure: true, // Set to true in production (HTTPS)
       sameSite: 'lax',
     });
