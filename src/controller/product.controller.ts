@@ -12,7 +12,6 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { ProductService } from '../service/product.service';
-import { JwtService } from '@nestjs/jwt';
 import { ProductDTO } from '../dto/product.dto';
 import { CommonUtil } from '../util/common-util';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
@@ -23,6 +22,7 @@ import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 import { PaginationDTO } from '../dto/pagination.dto';
+import { Request } from 'express';
 
 @Controller('product')
 export class ProductController{
@@ -30,7 +30,6 @@ export class ProductController{
 
   constructor(
     private readonly productService: ProductService,
-    private readonly jwtService: JwtService,
   ) {
   }
 
@@ -48,7 +47,7 @@ export class ProductController{
   @Post()
   async createProduct(@Body() productDTO: ProductDTO, @Req() req: Request ): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to create product ${productDTO.name}`);
       return await this.productService.createProduct(productDTO, userName);
@@ -72,7 +71,7 @@ export class ProductController{
   @Patch(':id')
   async updateProduct(@Param('id') id: number, @Body() productDTO: ProductDTO, @Req() req: Request ): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to update product ${productDTO.name}`);
       return await this.productService.updateProduct(id, productDTO, userName);

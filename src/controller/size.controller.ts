@@ -15,12 +15,12 @@ import { SizeService } from '../service/size.service';
 import { SizeDTO } from '../dto/size.dto';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { CommonUtil } from '../util/common-util';
-import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
+import { Request } from 'express';
 
 @Controller('size')
 export class SizeController{
@@ -28,7 +28,6 @@ export class SizeController{
 
   constructor(
     private readonly sizeService: SizeService,
-    private readonly jwtService: JwtService,
   ) {
   }
 
@@ -48,7 +47,7 @@ export class SizeController{
   @Post()
   async createSize(@Body() sizeDTO: SizeDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to create size ${sizeDTO.size}`);
       return await this.sizeService.createSize(sizeDTO, userName);
@@ -74,7 +73,7 @@ export class SizeController{
   @Patch(':id')
   async updateSize(@Param('id') id: number, @Body() sizeDTO: SizeDTO, @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to update size ${sizeDTO.size}`);
       return await this.sizeService.updateSize(id, sizeDTO, userName);

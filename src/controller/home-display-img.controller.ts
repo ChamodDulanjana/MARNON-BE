@@ -13,13 +13,13 @@ import {
 import { HomeDisplayImgService } from '../service/home_display_img.service';
 import { HomeDisplayImgDTO } from '../dto/home-display-img.dto';
 import { CommonUtil } from '../util/common-util';
-import { JwtService } from '@nestjs/jwt';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { ValidationException } from '../common/exception/validation.exception';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
+import { Request } from 'express';
 
 @Controller('home-display-img')
 export class HomeDisplayImgController {
@@ -27,7 +27,6 @@ export class HomeDisplayImgController {
 
   constructor(
     private readonly homeDisplayImgService: HomeDisplayImgService,
-    private readonly jwtService: JwtService,
   ) {}
 
   @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
@@ -47,12 +46,10 @@ export class HomeDisplayImgController {
       },
     }),)
   @Post()
-  async createOrUpdateHomeDisplayImg(
-    @Body() homeDisplayImgDTO: HomeDisplayImgDTO,
-    @Req() req: Request,
-  ): Promise<ResponseDTO> {
+  async createOrUpdateHomeDisplayImg(@Body() homeDisplayImgDTO: HomeDisplayImgDTO,
+                                     @Req() req: Request): Promise<ResponseDTO> {
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to create or update home display image for type: ${homeDisplayImgDTO.type}`);
       return await this.homeDisplayImgService.createOrUpdateHomeDisplayImg(homeDisplayImgDTO, userName);

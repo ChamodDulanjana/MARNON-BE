@@ -15,12 +15,12 @@ import { CategoryService } from '../service/category.service';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { CategoryDTO } from '../dto/category.dto';
 import { CommonUtil } from '../util/common-util';
-import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
+import { Request } from 'express';
 
 @Controller('category')
 export class CategoryController{
@@ -28,7 +28,6 @@ export class CategoryController{
 
   constructor(
     private readonly categoryService: CategoryService,
-    private readonly jwtService: JwtService,
   ) {
   }
 
@@ -48,7 +47,7 @@ export class CategoryController{
   @Post()
   async createCategory(@Body() categoryDTO: CategoryDTO, @Req() req: Request): Promise<ResponseDTO>{
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to create category ${categoryDTO.name}`);
       return await this.categoryService.createCategory(categoryDTO, userName);
@@ -76,7 +75,7 @@ export class CategoryController{
                        @Body() categoryDTO: CategoryDTO,
                        @Req() req: Request): Promise<ResponseDTO>{
     try {
-      const userName = CommonUtil.extractUsernameFromToken(req, this.jwtService);
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to update category ${categoryDTO.name}`);
       return await this.categoryService.updateCategory(id, categoryDTO, userName);
