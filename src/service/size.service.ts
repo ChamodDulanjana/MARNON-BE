@@ -1,9 +1,10 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { SizeRepository } from '../repository/size.repository';
 import { SizeDTO } from '../dto/size.dto';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { AlreadyExistException } from '../common/exception/alreadyExist.exception';
 import { SizeEntity } from '../entity/size.entity';
+import { NotFoundException } from '../common/exception/notFound.exception';
 
 type SizeGet = {
   id: number;

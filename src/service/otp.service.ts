@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OtpRepository } from '../repository/otp.repository';
 import { UserRepository } from '../repository/user.repository';
-import { NotFoundException } from '../common/exception/notFound.exception';
 import { OtpEntity } from '../entity/otp.entity';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { EmailService } from './email.service';
@@ -50,9 +49,9 @@ export class OtpService {
 
   async verifyOtp(email: string, otpCode: number): Promise<ResponseDTO> {
     const otpEntity = await this.otpRepository.findByEmail(email);
-
     if (!otpEntity) {
-      throw new NotFoundException([`OTP for email ${email} not found.`]);
+      this.LOGGER.error(`OTP not found for email: ${email}`);
+      return new ResponseDTO(404, 'OTP not found for this email.');
     }
 
     try {
