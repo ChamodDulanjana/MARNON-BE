@@ -4,34 +4,47 @@ import { UserRepository } from '../repository/user.repository';
 import { NotFoundException } from '../common/exception/notFound.exception';
 import { OtpEntity } from '../entity/otp.entity';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
+import { EmailService } from './email.service';
 
 @Injectable()
-export class OtpService{
+export class OtpService {
   private readonly LOGGER = new Logger(OtpService.name);
 
   constructor(
     private readonly otpRepository: OtpRepository,
+    private readonly emailService: EmailService,
     private readonly userRepository: UserRepository,
-  ) {
+  ) {}
+
+  generateOtp(): number {
+    return Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
   }
 
-  async createOtpForSignup(email: string): Promise<ResponseDTO>{
-    // Generate OTP logic here
+  async sendOtpForSignup(email: string): Promise<ResponseDTO> {
     try {
-      const otp: number = Math.floor(100000 + Math.random() * 900000); // Generate a 6-digit OTP
+      const otp: number = this.generateOtp();
 
       const otpEntity = new OtpEntity();
       otpEntity.email = email;
       otpEntity.otp = otp;
-      otpEntity.isActive = true; // Set OTP as active
+      otpEntity.isActive = true;
 
       await this.otpRepository.createOtp(otpEntity);
 
-      this.LOGGER.log(`OTP created for email: ${email}`);
-      return new ResponseDTO(201, 'OTP created successfully', {otp});
+      // Fire-and-forget email sending
+      // Using setTimeout to avoid blocking the main thread - send email asynchronously as a background task
+      // setTimeout(..., 0) tells the JavaScript event loop: “Run this function later, after the current task is done".
+      setTimeout(() => {
+        this.emailService.sendOtpEmail(email, otp).catch(err => {
+          this.LOGGER.error(`Failed to send OTP email to ${email}`, err);
+        });
+      }, 0);
+
+      this.LOGGER.log(`OTP mail send scheduled: ${email}`);
+      return new ResponseDTO(200, 'OTP sent successfully');
     } catch (error) {
-      this.LOGGER.error(`Error creating OTP for email: ${email}`, error);
-      throw new Error('Failed to create OTP');
+      this.LOGGER.error(`Error sending OTP email: ${email}`, error);
+      throw error;
     }
   }
 

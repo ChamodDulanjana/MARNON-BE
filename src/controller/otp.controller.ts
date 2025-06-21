@@ -11,17 +11,17 @@ export class OtpController{
   }
 
   @Post(':email')
-  async createOtp(@Param('email') email: string){
+  async sendOtp(@Param('email') email: string){
     try {
-      this.LOGGER.log('Creating OTP for email: ' + email);
-      return await this.otpService.createOtpForSignup(email);
+      this.LOGGER.log('Creating OTP email: ' + email);
+      return await this.otpService.sendOtpForSignup(email);
     } catch (error) {
-      this.LOGGER.error('Error creating OTP for email: ' + email, error);
+      this.LOGGER.error('Error creating OTP email: ' + email, error);
       throw error; // Re-throw the error to be handled by global exception filter
     }
   }
 
-  @Patch(':email/:otpCode')
+  @Patch(':verify/:otpCode')
   async verifyOtp(@Param('email') email: string, @Param('otpCode') otpCode: number){
     try {
       this.LOGGER.log(`Verifying OTP for email: ${email} with code: ${otpCode}`);

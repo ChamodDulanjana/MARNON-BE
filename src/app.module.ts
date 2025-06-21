@@ -11,6 +11,7 @@ import { CategoryModule } from './module/category.module';
 import { HomeDisplayImgModule } from './module/home-display-img.module';
 import { UserProductModule } from './module/user_product.module';
 import { OtpModule } from './module/otp.module';
+import { EmailModule } from './module/email.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { OtpModule } from './module/otp.module';
     HomeDisplayImgModule,
     UserProductModule,
     OtpModule,
+    EmailModule,
   ],
   controllers: [AppController],
   providers: [AppService],
