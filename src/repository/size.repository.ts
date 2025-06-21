@@ -12,19 +12,19 @@ export class SizeRepository{
   }
 
   async createSize(size: SizeEntity): Promise<SizeEntity> {
-      return this.sizeRepository.save(size);
+      return await this.sizeRepository.save(size);
   }
 
   async getById(id: number): Promise<SizeEntity | null> {
-    return this.sizeRepository.findOne({where: { id: id }});
+    return await this.sizeRepository.findOne({where: { id: id }});
   }
 
   async getAllSizes(): Promise<SizeEntity[]> {
-    return this.sizeRepository.find();
+    return await this.sizeRepository.find();
   }
 
   async getAllActiveSizes(): Promise<SizeEntity[]> {
-    return this.sizeRepository.find({where: { isActive: true }});
+    return await this.sizeRepository.find({where: { isActive: true }});
   }
 
   // Check if the size name exists

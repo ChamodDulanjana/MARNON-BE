@@ -14,11 +14,11 @@ export class ProductRepository {
   ) {}
 
   async createProduct(product: ProductEntity): Promise<ProductEntity> {
-    return this.productRepository.save(product);
+    return await this.productRepository.save(product);
   }
 
   async getById(id: number): Promise<ProductEntity | null> {
-    return this.productRepository.findOne({
+    return await this.productRepository.findOne({
       where: { id: id },
       relations: [
         'productCategory',
@@ -45,7 +45,7 @@ export class ProductRepository {
 
   // Get all products
   async getAllProducts(): Promise<ProductEntity[]> {
-    return this.productRepository.find({
+    return await this.productRepository.find({
       relations: [
         'productCategory',
         'productCategory.category',
@@ -213,7 +213,7 @@ export class ProductRepository {
 
   // Get products by category and count
   async getProductsByCategoryAndCount(category: string, count: number): Promise<ProductEntity[]> {
-    return this.productRepository.createQueryBuilder('product')
+    return await this.productRepository.createQueryBuilder('product')
       .leftJoinAndSelect('product.productCategory', 'productCategory')
       .leftJoinAndSelect('productCategory.category', 'category')
       .leftJoinAndSelect('product.productImage', 'productImage')

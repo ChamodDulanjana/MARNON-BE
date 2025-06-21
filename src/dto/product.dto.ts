@@ -34,6 +34,10 @@ export class ProductDTO{
   @IsNumber({}, {message: 'Selling Price must be a number'})
   sellingPrice: number;
 
+  @IsNotEmpty({message: 'Item code is required'})
+  @IsString({message: 'Item code must be a string'})
+  itemCode: string;
+
   @IsNotEmpty({message: 'Color is required'})
   @IsString({message: 'Color must be a string'})
   color: string;

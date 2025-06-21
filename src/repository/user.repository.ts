@@ -12,25 +12,25 @@ export class UserRepository {
   ) {}
 
   async createUser(user: UserEntity): Promise<UserEntity> {
-    return this.userRepository.save(user);
+    return await this.userRepository.save(user);
   }
 
   async findUserByEmail(email: string): Promise<UserEntity | null> {
-    return this.userRepository.findOne({ where: { email } });
+    return await this.userRepository.findOne({ where: { email } });
   }
 
   async findById(id: number): Promise<UserEntity | null> {
-    return this.userRepository.findOne({
+    return await this.userRepository.findOne({
       where: { id },
     });
   }
 
   async getAllUsers(): Promise<UserEntity[]> {
-    return this.userRepository.find();
+    return await this.userRepository.find();
   }
 
   async getAllActiveUsers(): Promise<UserEntity[]> {
-    return this.userRepository.find({ where: { isActive: true } });
+    return await this.userRepository.find({ where: { isActive: true } });
   }
 
   // Check id user email exists
@@ -44,6 +44,6 @@ export class UserRepository {
   }
 
   async getAllCustomersCount(): Promise<number> {
-    return this.userRepository.count({ where: { role: RoleEnum.USER } });
+    return await this.userRepository.count({ where: { role: RoleEnum.USER } });
   }
 }

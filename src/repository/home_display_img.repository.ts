@@ -12,21 +12,21 @@ export class HomeDisplayImgRepository{
   }
 
   async createHomeDisplayImg(homeDisplayImg: HomeDisplayImagesEntity): Promise<HomeDisplayImagesEntity> {
-    return this.homeDisplayImgRepository.save(homeDisplayImg);
+    return await this.homeDisplayImgRepository.save(homeDisplayImg);
   }
 
   async getById(id: number): Promise<HomeDisplayImagesEntity | null> {
-    return this.homeDisplayImgRepository.findOne({
+    return await this.homeDisplayImgRepository.findOne({
       where: { id: id }
     });
   }
 
   async getAllHomeDisplayImgs(): Promise<HomeDisplayImagesEntity[]> {
-    return this.homeDisplayImgRepository.find();
+    return await this.homeDisplayImgRepository.find();
   }
 
   async getByType(type: string): Promise<HomeDisplayImagesEntity | null> {
-    return this.homeDisplayImgRepository.findOne({
+    return await this.homeDisplayImgRepository.findOne({
       where: { type: type }
     });
   }

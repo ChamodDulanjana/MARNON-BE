@@ -12,23 +12,23 @@ export class CategoryRepository{
   }
 
   async createCategory(category: CategoryEntity): Promise<CategoryEntity>{
-    return this.categoryRepository.save(category);
+    return await this.categoryRepository.save(category);
   }
 
   async getById(id: number): Promise<CategoryEntity | null>{
-    return this.categoryRepository.findOne({where: {id}});
+    return await this.categoryRepository.findOne({where: {id}});
   }
 
   async getAll(): Promise<CategoryEntity[]>{
-    return this.categoryRepository.find();
+    return await this.categoryRepository.find();
   }
 
   async getAllActive(): Promise<CategoryEntity[]>{
-    return this.categoryRepository.find({where: {isActive: true}});
+    return await this.categoryRepository.find({where: {isActive: true}});
   }
 
   // check if category name exists
   async findByName(name: string): Promise<CategoryEntity | null>{
-    return this.categoryRepository.findOne({where: {name}});
+    return await this.categoryRepository.findOne({where: {name}});
   }
 }
