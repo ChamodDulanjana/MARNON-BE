@@ -22,8 +22,17 @@ export class UserEntity extends BaseEntity{
   @Column({name: 'contact'})
   contact: string;
 
-  @Column({name: 'address', type: 'longtext'})
-  address: string;
+  @Column({name: 'street_address', type: 'longtext'})
+  streetAddress: string;
+
+  @Column({name: 'town_or_city', nullable: true})
+  townOrCity: string;
+
+  @Column({name: 'province_or_state', nullable: true})
+  provinceOrState: string;
+
+  @Column({name: 'postal_code', nullable: true})
+  postalCode: string;
 
   @Column({name: 'role', type: 'enum', enum: RoleEnum})
   role: RoleEnum;

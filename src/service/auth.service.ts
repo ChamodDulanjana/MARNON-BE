@@ -88,7 +88,7 @@ export class AuthService {
     // Check if user role is valid
     if (userDTO.role !== RoleEnum.USER) {
       this.LOGGER.warn(`Invalid role specified: ${userDTO.role}`);
-      throw new BadRequestException(['Invalid role specified']);
+      throw new BadRequestException('Invalid role specified');
     }
 
     try {
@@ -98,7 +98,7 @@ export class AuthService {
       user.username = userDTO.email;
       user.password = await bcrypt.hash(userDTO.password, 10);
       user.contact = userDTO.contact;
-      user.address = userDTO.address;
+      user.streetAddress = userDTO.streetAddress;
       user.role = RoleEnum.USER;
       user.createBy = userDTO.email;
       user.isActive = true;
