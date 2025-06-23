@@ -1,5 +1,5 @@
 import { RoleEnum } from '../common/enums/role.enum';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class UserDTO{
   @IsNotEmpty({message: 'Name is required'})
@@ -18,9 +18,21 @@ export class UserDTO{
   @IsString({message: 'Contact must be a string'})
   contact: string;
 
-  @IsNotEmpty({message: 'Address is required'})
-  @IsString({message: 'Address must be a string'})
-  address: string;
+  @IsNotEmpty({message: 'Street Address is required'})
+  @IsString({message: 'Street Address must be a string'})
+  streetAddress: string;
+
+  @IsOptional()
+  @IsString({ message: 'Town or City must be a string' })
+  townOrCity?: string;
+
+  @IsOptional()
+  @IsString({message: 'Province or State must be a string'})
+  provinceOrState?: string;
+
+  @IsOptional()
+  @IsString({message: 'Postal Code must be a string'})
+  postalCode?: string;
 
   @IsNotEmpty({message: 'Role is required'})
   @IsString({message: 'Role must be a string'})
