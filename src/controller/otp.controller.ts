@@ -21,7 +21,7 @@ export class OtpController{
     }
   }
 
-  @Patch(':verify/:otpCode')
+  @Patch('verify/:email/:otpCode')
   async verifyOtp(@Param('email') email: string, @Param('otpCode') otpCode: number){
     try {
       this.LOGGER.log(`Verifying OTP for email: ${email} with code: ${otpCode}`);
