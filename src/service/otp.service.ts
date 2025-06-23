@@ -21,7 +21,7 @@ export class OtpService {
 
   async sendOtpForSignup(email: string): Promise<ResponseDTO> {
     // Check if the user already exists
-    const user = await this.userRepository.findUserByEmail(email);
+    const user = await this.userRepository.findActiveUserByEmail(email);
     if (user) {
       this.LOGGER.error(`User already exists with email: ${email}`);
       return new ResponseDTO(400, 'User already exists with this email.');

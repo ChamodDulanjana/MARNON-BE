@@ -15,13 +15,13 @@ export class UserRepository {
     return await this.userRepository.save(user);
   }
 
-  async findUserByEmail(email: string): Promise<UserEntity | null> {
-    return await this.userRepository.findOne({ where: { email } });
+  async findActiveUserByEmail(email: string): Promise<UserEntity | null> {
+    return await this.userRepository.findOne({ where: { email, isActive: true } });
   }
 
-  async findById(id: number): Promise<UserEntity | null> {
+  async findActiveUserById(id: number): Promise<UserEntity | null> {
     return await this.userRepository.findOne({
-      where: { id },
+      where: { id, isActive : true },
     });
   }
 
