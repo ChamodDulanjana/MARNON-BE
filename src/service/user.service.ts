@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { UserRepository } from '../repository/user.repository';
 import { NotFoundException } from '../common/exception/notFound.exception';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
@@ -16,7 +16,10 @@ type UserGet = {
   email: string;
   role: string;
   contact: string;
-  address: string;
+  streetAddress: string;
+  townOrCity: string;
+  provinceOrState: string;
+  postalCode: string;
   createDate: Date;
   createBy: string;
   modifyDate: Date;
@@ -33,7 +36,7 @@ export class UserService{
   }
 
   async getUserById(id: number) {
-    const userEntity = await this.userRepository.findById(id);
+    const userEntity = await this.userRepository.findActiveUserById(id);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
     }
@@ -46,7 +49,10 @@ export class UserService{
         email: userEntity.email,
         role: userEntity.role,
         contact: userEntity.contact,
-        address: userEntity.address,
+        streetAddress: userEntity.streetAddress,
+        townOrCity: userEntity.townOrCity,
+        provinceOrState: userEntity.provinceOrState,
+        postalCode: userEntity.postalCode,
         createDate: userEntity.createDate,
         createBy: userEntity.createBy,
         modifyDate: userEntity.modifyDate,
@@ -62,7 +68,7 @@ export class UserService{
   }
 
   async getUserByEmail(email: string): Promise<ResponseDTO> {
-    const userEntity = await this.userRepository.findUserByEmail(email);
+    const userEntity = await this.userRepository.findActiveUserByEmail(email);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
     }
@@ -75,7 +81,10 @@ export class UserService{
         email: userEntity.email,
         role: userEntity.role,
         contact: userEntity.contact,
-        address: userEntity.address,
+        streetAddress: userEntity.streetAddress,
+        townOrCity: userEntity.townOrCity,
+        provinceOrState: userEntity.provinceOrState,
+        postalCode: userEntity.postalCode,
         createDate: userEntity.createDate,
         createBy: userEntity.createBy,
         modifyDate: userEntity.modifyDate,
@@ -101,7 +110,10 @@ export class UserService{
           email: userEntity.email,
           role: userEntity.role,
           contact: userEntity.contact,
-          address: userEntity.address,
+          streetAddress: userEntity.streetAddress,
+          townOrCity: userEntity.townOrCity,
+          provinceOrState: userEntity.provinceOrState,
+          postalCode: userEntity.postalCode,
           createDate: userEntity.createDate,
           createBy: userEntity.createBy,
           modifyDate: userEntity.modifyDate,
@@ -128,7 +140,10 @@ export class UserService{
           email: userEntity.email,
           role: userEntity.role,
           contact: userEntity.contact,
-          address: userEntity.address,
+          streetAddress: userEntity.streetAddress,
+          townOrCity: userEntity.townOrCity,
+          provinceOrState: userEntity.provinceOrState,
+          postalCode: userEntity.postalCode,
           createDate: userEntity.createDate,
           createBy: userEntity.createBy,
           modifyDate: userEntity.modifyDate,
@@ -145,7 +160,7 @@ export class UserService{
   }
 
   async updateByRegularUser(id: number, userDTO: UserUpdateDTO, userName: string): Promise<ResponseDTO> {
-    const userEntity = await this.userRepository.findById(id);
+    const userEntity = await this.userRepository.findActiveUserById(id);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
     }
@@ -159,13 +174,16 @@ export class UserService{
     try {
       userEntity.name = userDTO.name;
       userEntity.contact = userDTO.contact;
-      userEntity.address = userDTO.address;
+      userEntity.streetAddress = userDTO.streetAddress;
+      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
+      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.modifyBy = userName;
 
       await this.userRepository.createUser(userEntity);
 
       this.LOGGER.log(`User with id ${id} updated successfully`);
-      return new ResponseDTO(200, `User with id ${id} updated successfully`, userEntity);
+      return new ResponseDTO(200, `User with id ${id} updated successfully`);
     } catch (error) {
       this.LOGGER.error(`Failed to update user: ${error.message}`);
       throw error;
@@ -173,7 +191,7 @@ export class UserService{
   }
 
   async updateByAdminUser(id: number, userDTO: UserUpdateDTO, userName: string): Promise<ResponseDTO> {
-    const userEntity = await this.userRepository.findById(id);
+    const userEntity = await this.userRepository.findActiveUserById(id);
     if (!userEntity) {
       throw new NotFoundException(['User not found']);
     }
@@ -192,14 +210,17 @@ export class UserService{
     try {
       userEntity.name = userDTO.name;
       userEntity.contact = userDTO.contact;
-      userEntity.address = userDTO.address;
+      userEntity.streetAddress = userDTO.streetAddress;
+      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
+      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.role = userDTO.role;
       userEntity.modifyBy = userName;
 
       await this.userRepository.createUser(userEntity);
 
       this.LOGGER.log(`User with id ${id} updated successfully`);
-      return new ResponseDTO(200, `User with id ${id} updated successfully`, userEntity);
+      return new ResponseDTO(200, `User with id ${id} updated successfully`);
     } catch (error) {
       this.LOGGER.error(`Failed to update user: ${error.message}`);
       throw error;
@@ -229,7 +250,10 @@ export class UserService{
       userEntity.username = userDTO.email;
       userEntity.password = await bcrypt.hash(userDTO.password, 10);
       userEntity.contact = userDTO.contact;
-      userEntity.address = userDTO.address;
+      userEntity.streetAddress = userDTO.streetAddress;
+      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
+      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.role = userDTO.role;
       userEntity.createBy = userName;
       userEntity.isActive = true;
@@ -252,6 +276,46 @@ export class UserService{
       return new ResponseDTO(200, `Total customers count: ${count}`, count);
     } catch (error) {
       this.LOGGER.error(`Failed to get all customers count: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async fillCheckoutUserDetails(userDTO: UserUpdateDTO, id: number, userName: string): Promise<ResponseDTO> {
+    const userEntity = await this.userRepository.findActiveUserById(id);
+    if (!userEntity) {
+      throw new NotFoundException(['User not found']);
+    }
+
+    // Check if town or city is provided
+    if (!userDTO.townOrCity || userDTO.townOrCity.trim() === '') {
+      throw new BadRequestException('Town or City is required');
+    }
+
+    // Check if province or state is provided
+    if (!userDTO.provinceOrState || userDTO.provinceOrState.trim() === '') {
+      throw new BadRequestException('Province or State is required');
+    }
+
+    // Check if postal code is provided
+    if (!userDTO.postalCode || userDTO.postalCode.trim() === '') {
+      throw new BadRequestException('Postal Code is required');
+    }
+
+    try {
+      userEntity.name = userDTO.name;
+      userEntity.contact = userDTO.contact;
+      userEntity.streetAddress = userDTO.streetAddress;
+      userEntity.townOrCity = userDTO.townOrCity;
+      userEntity.provinceOrState = userDTO.provinceOrState;
+      userEntity.postalCode = userDTO.postalCode;
+      userEntity.modifyBy = userName;
+
+      await this.userRepository.createUser(userEntity);
+
+      this.LOGGER.log(`User with id ${id} updated successfully`);
+      return new ResponseDTO(200, `User with id ${id} updated successfully`);
+    } catch (error) {
+      this.LOGGER.error(`Failed to update user: ${error.message}`);
       throw error;
     }
   }
