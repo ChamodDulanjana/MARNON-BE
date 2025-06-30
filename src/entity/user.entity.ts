@@ -1,7 +1,7 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from './common_attribute/base.entity';
 import { RoleEnum } from '../common/enums/role.enum';
-import { UserProductEntity } from './user_product.entity';
+import { OrderEntity } from './order.entity';
 import { Exclude } from 'class-transformer';
 import { ReviewEntity } from './review.entity';
 
@@ -37,9 +37,9 @@ export class UserEntity extends BaseEntity{
   @Column({name: 'role', type: 'enum', enum: RoleEnum})
   role: RoleEnum;
 
-  @OneToMany(() => UserProductEntity, userProduct => userProduct.user, {cascade: true})
+  @OneToMany(() => OrderEntity, order => order.user, {cascade: true})
   @Exclude()
-  userProduct: UserProductEntity[];
+  order: OrderEntity[];
 
   @OneToMany(() => ReviewEntity, review => review.user, {cascade: true})
   @Exclude()

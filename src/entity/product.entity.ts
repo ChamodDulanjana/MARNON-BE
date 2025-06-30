@@ -1,6 +1,6 @@
 import { Column, Entity, OneToMany } from 'typeorm';
 import { BaseEntity } from './common_attribute/base.entity';
-import { UserProductEntity } from './user_product.entity';
+import { OrderEntity } from './order.entity';
 import { Exclude } from 'class-transformer';
 import { ProductCategoryEntity } from './product_category.entity';
 import { ProductSizeEntity } from './product_size.entity';
@@ -37,9 +37,9 @@ export class ProductEntity extends BaseEntity{
   @Column({name: 'color'})
   color: string;
 
-  @OneToMany(() => UserProductEntity, userProduct => userProduct.product, {cascade: true})
+  @OneToMany(() => OrderEntity, order => order.product, {cascade: true})
   @Exclude()
-  userProduct: UserProductEntity[];
+  order: OrderEntity[];
 
   @OneToMany(() => ProductCategoryEntity, productCategory => productCategory.product, {cascade: true})
   @Exclude()

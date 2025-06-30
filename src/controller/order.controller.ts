@@ -1,18 +1,18 @@
 import { Controller, Get, Logger, Param, Query, UseGuards } from '@nestjs/common';
-import { UserProductService } from '../service/user_product.service';
+import { OrderService } from '../service/order.service';
 import { AuthGuard } from '../common/guards/auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 
-@Controller('user-product')
-export class UserProductController{
-  private readonly LOGGER = new Logger(UserProductController.name);
+@Controller('order') // Base route for this controller
+export class OrderController {
+  private readonly LOGGER = new Logger(OrderController.name);
 
   constructor(
     // Injecting the UserProduct service
-    private readonly userProductService: UserProductService,
+    private readonly orderService: OrderService,
   ){}
 
 
@@ -22,7 +22,7 @@ export class UserProductController{
   async getSalesCountByMonthAndYear(@Query('month') month: number, @Query('year') year: number): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to get products by month ${month} and year ${year}`);
-      return await this.userProductService.getSalesCountByMonthAndYear(month, year);
+      return await this.orderService.getSalesCountByMonthAndYear(month, year);
     } catch (error) {
       this.LOGGER.error(`Failed to get products by month and year: ${error.message}`);
       throw error;
@@ -35,7 +35,7 @@ export class UserProductController{
   async getSalesCountOfAllMonths(){
     try {
       this.LOGGER.log('Received request to get all sales in months');
-      return await this.userProductService.getSalesCountOfAllMonths();
+      return await this.orderService.getSalesCountOfAllMonths();
     } catch (error) {
       this.LOGGER.error(`Failed to get all sales in months: ${error.message}`);
       throw error;
@@ -48,7 +48,7 @@ export class UserProductController{
   async getSalesCountOfDayRange(@Param('numberOfDays') numberOfDays: number): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to get all sales in last ${numberOfDays} days`);
-      return await this.userProductService.getSalesCountOfDayRange(numberOfDays);
+      return await this.orderService.getSalesCountOfDayRange(numberOfDays);
     } catch (error) {
       this.LOGGER.error(`Failed to get all sales in last ${numberOfDays} days: ${error.message}`);
       throw error;
@@ -61,7 +61,7 @@ export class UserProductController{
   async getSalesCountByDate(@Param('date') date: string): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to get all sales count by date ${date}`);
-      return await this.userProductService.getSalesCountByDate(date);
+      return await this.orderService.getSalesCountByDate(date);
     } catch (error) {
       this.LOGGER.error(`Failed to get all sales count by date: ${error.message}`);
       throw error;
@@ -74,7 +74,7 @@ export class UserProductController{
   async getMonthlySales(@Query('year') year: number, @Query('month') month: number): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to get monthly sales for month ${month} and year ${year}`);
-      return await this.userProductService.getMonthlySales(year, month);
+      return await this.orderService.getMonthlySales(year, month);
     } catch (error) {
       this.LOGGER.error(`Failed to get monthly sales: ${error.message}`);
       throw error;
@@ -87,7 +87,7 @@ export class UserProductController{
   async getMonthlyRevenue(@Query('year') year: number, @Query('month') month: number): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to get monthly revenue for month ${month} and year ${year}`);
-      return await this.userProductService.getMonthlyRevenue(year, month);
+      return await this.orderService.getMonthlyRevenue(year, month);
     } catch (error) {
       this.LOGGER.error(`Failed to get monthly revenue: ${error.message}`);
       throw error;

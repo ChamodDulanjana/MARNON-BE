@@ -14,6 +14,7 @@ import { CategoryRepository } from '../repository/category.repository';
 import { ProductCategoryEntity } from '../entity/product_category.entity';
 import { FilterProductDTO } from 'src/dto/filterProduct.dto';
 import { PaginationDTO } from 'src/dto/pagination.dto';
+import { OrderRepository } from '../repository/order.repository';
 
 type ProductGet = {
   id: number;
@@ -52,6 +53,7 @@ export class ProductService {
     private readonly productRepository: ProductRepository,
     private readonly sizeRepository: SizeRepository,
     private readonly categoryRepository: CategoryRepository,
+    private readonly orderRepository: OrderRepository,
     private readonly dataSource: DataSource, // Required for QueryRunner
   ) {}
 
@@ -664,7 +666,7 @@ export class ProductService {
           }
 
           // Await sales count
-          const sales = await this.getSalesByProductId(productEntity.id);
+          const sales = await this.orderRepository.getSalesCountByProductId(productEntity.id);
 
           return {
             id: productEntity.id,
@@ -680,21 +682,6 @@ export class ProductService {
       return new ResponseDTO(200,'Product List found successfully', {productList, totalRows});
     } catch (error) {
       this.LOGGER.error(`Failed to get product List: ${error.message}`);
-      throw error;
-    }
-  }
-
-  async getSalesByProductId(productId: number): Promise<number> {
-    // Check if the product exists
-    const productEntity = await this.productRepository.getById(productId);
-    if (!productEntity) {
-      throw new NotFoundException(['Product not found']);
-    }
-
-    try {
-      // Fetch sales data for the product
-      return await this.productRepository.getSalesByProductId(productId);
-    } catch (error) {
       throw error;
     }
   }

@@ -9,7 +9,7 @@ import { ProductModule } from './module/product.module';
 import { SizeModule } from './module/size.module';
 import { CategoryModule } from './module/category.module';
 import { HomeDisplayImgModule } from './module/home-display-img.module';
-import { UserProductModule } from './module/user_product.module';
+import { OrderModule } from './module/order.module';
 import { OtpModule } from './module/otp.module';
 import { EmailModule } from './module/email.module';
 
@@ -24,7 +24,7 @@ import { EmailModule } from './module/email.module';
     SizeModule,
     CategoryModule,
     HomeDisplayImgModule,
-    UserProductModule,
+    OrderModule,
     OtpModule,
     EmailModule,
   ],

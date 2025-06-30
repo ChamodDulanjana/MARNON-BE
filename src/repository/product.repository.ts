@@ -57,7 +57,7 @@ export class ProductRepository {
     });
   }
 
-  // Get all MENs products
+  // Get all products by category
   async findProductsByCategory(category: string): Promise<ProductEntity[]> {
     /*const result = await this.dataSource.query(`
       SELECT p.*
@@ -163,7 +163,7 @@ export class ProductRepository {
       .innerJoin('productCategory.category', 'category')
       .leftJoin('product.productSize', 'productSize')
       .leftJoin('productSize.size', 'size')
-      .leftJoin('product.userProduct', 'userProduct') // Assuming you have a UserProduct entity for popularity
+      .leftJoin('product.order', 'order') // Assuming you have a order entity for popularity
       .where('category.name = :name', { name: categoryName })
       .andWhere('product.isActive = :isActive', { isActive: true });
 
@@ -182,10 +182,10 @@ export class ProductRepository {
           query.orderBy('product.createDate', 'DESC');
           break;
         case 'priceLowToHigh':
-          query.orderBy('product.newPrice', 'ASC');
+          query.orderBy('product.selling_price', 'ASC');
           break;
         case 'priceHighToLow':
-          query.orderBy('product.newPrice', 'DESC');
+          query.orderBy('product.selling_price', 'DESC');
           break;
       }
     }
@@ -197,7 +197,7 @@ export class ProductRepository {
     } else {
       const popularityResults = await query
         .select('product.id', 'id')
-        .addSelect('COUNT(userProduct.id)', 'popularity')
+        .addSelect('COUNT(order.id)', 'popularity')
         .groupBy('product.id')
         .orderBy('popularity', 'DESC')
         .getRawMany();
@@ -231,7 +231,7 @@ export class ProductRepository {
 
     const query = this.productRepository
       .createQueryBuilder('product')
-      .leftJoin('product.userProduct', 'userProduct')
+      .leftJoin('product.order', 'order')
       .leftJoinAndSelect('product.productCategory', 'productCategory')
       .leftJoinAndSelect('productCategory.category', 'category')
       .where('product.isActive = :isActive', { isActive: true })
@@ -244,8 +244,8 @@ export class ProductRepository {
         'productCategory',
         'category',
       ])
-      .addSelect('COUNT(userProduct.id)', 'userProductCount')
-      .orderBy('userProductCount', 'DESC');
+      .addSelect('COUNT(order.id)', 'orderCount')
+      .orderBy('orderCount', 'DESC');
 
     // Clone the query for count
     const total = await query.getCount();
@@ -260,17 +260,5 @@ export class ProductRepository {
       productEntities: paginated.entities,
       totalRows: total,
     };
-  }
-
-  async getSalesByProductId(productId: number): Promise<number> {
-    const result = await this.dataSource.query(
-      `SELECT COUNT(*) as salesCount
-        FROM user_product
-        WHERE product_id = ?
-        AND is_active = true
-      `, [productId],
-    );
-
-    return parseInt(result[0].salesCount, 10);
   }
 }

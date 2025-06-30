@@ -151,17 +151,4 @@ export class ProductController{
       throw error;
     }
   }
-
-  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
-  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
-  @Get('all/product-sales/:id')
-  async getSalesByProductId(@Param('id') id: number): Promise<number> {
-    try {
-      this.LOGGER.log(`Received request to get sales by product ID ${id}`);
-      return await this.productService.getSalesByProductId(id);
-    } catch (error) {
-      this.LOGGER.error(`Failed to get sales by product ID: ${error.message}`);
-      throw error;
-    }
-  }
 }

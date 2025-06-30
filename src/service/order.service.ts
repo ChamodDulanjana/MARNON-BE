@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { UserProductRepository } from '../repository/user_product.repository';
+import { OrderRepository } from '../repository/order.repository';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 
 @Injectable()
-export class UserProductService{
-  private readonly LOGGER = new Logger(UserProductService.name);
+export class OrderService {
+  private readonly LOGGER = new Logger(OrderService.name);
 
   constructor(
-    // Injecting the UserProduct repository
-    private readonly userProductRepository: UserProductRepository,
+    // Injecting the Order repository
+    private readonly orderRepository: OrderRepository,
   ) {
   }
 
@@ -22,14 +22,9 @@ export class UserProductService{
 
     try {
       // Fetch products by month and year
-      const result = await this.userProductRepository.getSalesCountByMonthAndYear(month, year);
+      const result = await this.orderRepository.getSalesCountByMonthAndYear(month, year);
 
       let output: { category: string; sales: number }[] = [];
-
-      // If no results, return empty array
-      /*if (result.length === 0){
-        return output;
-      }*/
 
       const expectedCategories = ['Men', 'Women', 'Kid'];
 
@@ -59,7 +54,7 @@ export class UserProductService{
   async getSalesCountOfAllMonths(){
     try {
       // Fetch all sales data in months
-      const result = await this.userProductRepository.getSalesCountOfAllMonths();
+      const result = await this.orderRepository.getSalesCountOfAllMonths();
 
       const monthMap: Record<string, any> = {};
 
@@ -117,7 +112,7 @@ export class UserProductService{
     try {
       // Fetch all sales data in days
       const result: {category: string, date: string, sales: string}[]
-        = await this.userProductRepository.getSalesCountOfDayRange(numberOfDays);
+        = await this.orderRepository.getSalesCountOfDayRange(numberOfDays);
 
       // Build map of date to sales by category
       const dateMap: Record<string, any> = {};
@@ -173,7 +168,7 @@ export class UserProductService{
 
     try {
       // Fetch sales count by date
-      const salesCount = await this.userProductRepository.getSalesCountByDate(date);
+      const salesCount = await this.orderRepository.getSalesCountByDate(date);
 
       this.LOGGER.log(`Sales count found successfully for date ${date}`);
       return new ResponseDTO(200, `Sales count found successfully for date ${date}`,  salesCount );
@@ -193,7 +188,7 @@ export class UserProductService{
 
     try {
       // Fetch monthly sales
-      const result = await this.userProductRepository.getMonthlySales(year, month);
+      const result = await this.orderRepository.getMonthlySales(year, month);
 
       this.LOGGER.log(`Monthly sales data found successfully for ${month}/${year}`);
       return new ResponseDTO(200, `Monthly sales data found successfully for ${month}/${year}`, result);
@@ -213,7 +208,7 @@ export class UserProductService{
 
     try {
       // Fetch monthly revenue
-      const result = await this.userProductRepository.getMonthlyRevenue(year, month);
+      const result = await this.orderRepository.getMonthlyRevenue(year, month);
 
       this.LOGGER.log(`Monthly revenue data found successfully for ${month}/${year}`);
       return new ResponseDTO(200, `Monthly revenue data found successfully for ${month}/${year}`, result);
