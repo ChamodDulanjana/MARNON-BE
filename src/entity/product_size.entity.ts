@@ -11,6 +11,9 @@ export class ProductSizeEntity{
   @Column({ name: 'is_active', type: 'boolean', default: true })
   isActive: boolean;
 
+  @Column({ name: 'qty'})
+  qty: number;
+
   @ManyToOne(() => ProductEntity, (product) => product.productSize)
   @JoinColumn({ name: 'product_id' })
   @Exclude()

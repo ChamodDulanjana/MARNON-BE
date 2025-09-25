@@ -1,9 +1,10 @@
-import { Body, Controller, Logger, Post, UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Logger, Patch, Post, Res, UsePipes, ValidationPipe } from '@nestjs/common';
 import { AuthService } from '../service/auth.service';
 import { RequestDTO } from '../dto/req&resp/request.dto';
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { UserDTO } from '../dto/user.dto';
 import { ValidationException } from '../common/exception/validation.exception';
+import { Response } from 'express';
 
 @Controller('auth')
 export class AuthController{
@@ -19,20 +20,18 @@ export class AuthController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
-  async signIn(@Body() requestDTO: RequestDTO): Promise<ResponseDTO> {
+  async signIn(@Body() requestDTO: RequestDTO, @Res({ passthrough: true }) res: Response): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to login user ${requestDTO.email}`);
-      return await this.authService.signIn(requestDTO);
+      return await this.authService.signIn(requestDTO, res);
     } catch (error) {
       this.LOGGER.error(`Failed to login user: ${error.message}`);
-      throw error;
+      throw error; // Let the global exception filter handle it
     }
   }
 
@@ -41,11 +40,9 @@ export class AuthController{
     whitelist: true,
     forbidNonWhitelisted: true,
     exceptionFactory: (errors) => {
-      return new ValidationException(errors.map((err) => {
-        return err.constraints
-          ? Object.values(err.constraints).join(', ')
-          : 'Invalid value';
-      }));
+      return new ValidationException(
+        errors[0].constraints ? Object.values(errors[0].constraints) : ['Invalid value']
+      );
     },
   }))
   async signUp(@Body() userDTO: UserDTO): Promise<ResponseDTO> {
@@ -54,7 +51,18 @@ export class AuthController{
       return await this.authService.signUp(userDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to create user: ${error.message}`);
-      throw error;
+      throw error; // Let the global exception filter handle it
+    }
+  }
+
+  @Patch('logout')
+  async logout(@Res({ passthrough: true }) res: Response): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to logout user`);
+      return await this.authService.logout(res);
+    } catch (error) {
+      this.LOGGER.error(`Failed to logout user: ${error.message}`);
+      throw error; // Let the global exception filter handle it
     }
   }
 }
