@@ -149,4 +149,23 @@ export class SizeService{
       throw error;
     }
   }
+
+  async changeStatus(id: number, isActive: boolean, userName: string): Promise<ResponseDTO> {
+    const sizeEntity = await this.sizeRepository.getById(id);
+    if (!sizeEntity) {
+      throw new NotFoundException(['Size not found']);
+    }
+
+    try {
+      sizeEntity.isActive = isActive;
+      sizeEntity.modifyBy = userName;
+      await this.sizeRepository.createSize(sizeEntity);
+
+      this.LOGGER.log(`Size status changed successfully`);
+      return new ResponseDTO(200, 'Size status changed successfully');
+    } catch (error) {
+      this.LOGGER.error(`Failed to change size status: ${error.message}`);
+      throw error;
+    }
+  }
 }

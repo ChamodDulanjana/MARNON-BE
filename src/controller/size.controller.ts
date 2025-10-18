@@ -119,4 +119,22 @@ export class SizeController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Patch('status/change/:id/:isActive')
+  async changeStatus(@Param('id') id: number,
+                     @Param('isActive') isActive: boolean,
+                     @Req() req: Request, ): Promise<ResponseDTO> {
+    try {
+      console.log('Change status called');
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
+
+      this.LOGGER.log(`Received request to change status of size with id ${id} to ${isActive}`);
+      return await this.sizeService.changeStatus(id, isActive, userName);
+    } catch (error) {
+      this.LOGGER.error(`Failed to change status of size: ${error.message}`);
+      throw error;
+    }
+  }
 }
