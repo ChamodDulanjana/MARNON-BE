@@ -166,4 +166,18 @@ export class SizeController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('by/status/and/pagination/:isActive')
+  async getSizesByStatusAndPagination(@Param('isActive') isActive: boolean,
+                                      @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get sizes by status and pagination`);
+      return await this.sizeService.getSizesByStatusAndPagination(isActive, paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get sizes by status and pagination: ${error.message}`);
+      throw error;
+    }
+  }
 }

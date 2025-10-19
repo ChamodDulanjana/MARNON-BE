@@ -230,4 +230,33 @@ export class SizeService{
       throw error;
     }
   }
+
+  async getSizesByStatusAndPagination(isActive: boolean, pagination: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      const { page, limit } = pagination;
+
+      const [sizeEntities, total] = await this.sizeRepository.getSizesByStatusAndPagination(isActive, page, limit);
+
+      const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
+        id: sizeEntity.id,
+        size: sizeEntity.size,
+        isActive: sizeEntity.isActive,
+        createBy: sizeEntity.createBy,
+        modifyBy: sizeEntity.modifyBy,
+        createDate: sizeEntity.createDate,
+        modifyDate: sizeEntity.modifyDate,
+      }));
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+      this.LOGGER.log(`Sizes with status ${isActive} fetched successfully`);
+      return new ResponseDTO(200, `Sizes with status fetched successfully`, { sizeList,  meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to find sizes by status: ${error.message}`);
+      throw error;
+    }
+  }
 }

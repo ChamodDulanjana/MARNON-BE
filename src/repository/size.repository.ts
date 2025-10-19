@@ -64,4 +64,18 @@ export class SizeRepository{
 
     return [result, total];
   }
+
+  // Get sizes By status and pagination
+  async getSizesByStatusAndPagination(isActive: boolean, page: number, limit: number): Promise<[SizeEntity[], number]> {
+    const [result, total] = await this.sizeRepository.findAndCount({
+      where: { isActive: isActive },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createDate: 'DESC', // order newest first
+      },
+    });
+
+    return [result, total];
+  }
 }
