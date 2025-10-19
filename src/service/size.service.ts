@@ -5,6 +5,7 @@ import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { AlreadyExistException } from '../common/exception/alreadyExist.exception';
 import { SizeEntity } from '../entity/size.entity';
 import { NotFoundException } from '../common/exception/notFound.exception';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 type SizeGet = {
   id: number;
@@ -165,6 +166,37 @@ export class SizeService{
       return new ResponseDTO(200, 'Size status changed successfully');
     } catch (error) {
       this.LOGGER.error(`Failed to change size status: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getAllSizesByPagination(pagination: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      const { page, limit } = pagination;
+
+      const [sizeEntities, total] = await this.sizeRepository.getAllSizesByPagination(page, limit);
+
+      const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
+        id: sizeEntity.id,
+        size: sizeEntity.size,
+        isActive: sizeEntity.isActive,
+        createBy: sizeEntity.createBy,
+        modifyBy: sizeEntity.modifyBy,
+        createDate: sizeEntity.createDate,
+        modifyDate: sizeEntity.modifyDate,
+      }));
+
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+      this.LOGGER.log(`Page ${page} of sizes found successfully`);
+      return new ResponseDTO(200, `Sizes fetched successfully`, { sizeList, meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to find sizes: ${error.message}`);
       throw error;
     }
   }

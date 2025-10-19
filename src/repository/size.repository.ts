@@ -31,4 +31,17 @@ export class SizeRepository{
   async checkSizeName(name: string): Promise<SizeEntity | null> {
     return await this.sizeRepository.findOne({where: { size: name }});
   }
+
+  // Get sizes By pagination
+  async getAllSizesByPagination(page: number, limit: number): Promise<[SizeEntity[], number]> {
+    const [result, total] = await this.sizeRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createDate: 'DESC', // order newest first
+      },
+    });
+
+    return [result, total];
+  }
 }

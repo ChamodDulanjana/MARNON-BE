@@ -21,6 +21,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
 import { Request } from 'express';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Controller('size')
 export class SizeController{
@@ -134,6 +135,20 @@ export class SizeController{
       return await this.sizeService.changeStatus(id, isActive, userName);
     } catch (error) {
       this.LOGGER.error(`Failed to change status of size: ${error.message}`);
+      throw error;
+    }
+  }
+
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('all/sizes/by/pagination')
+  async getAllSizesByPagination(@Body() paginationDTO: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get all sizes by pagination`);
+      return await this.sizeService.getAllSizesByPagination(paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sizes by pagination: ${error.message}`);
       throw error;
     }
   }
