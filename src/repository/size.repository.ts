@@ -44,4 +44,24 @@ export class SizeRepository{
 
     return [result, total];
   }
+
+  // Search sizes By pagination
+  async searchSizesByPagination(searchTerm: string, page: number, limit: number): Promise<[SizeEntity[], number]> {
+    const query = this.sizeRepository.createQueryBuilder('size')
+      .where(
+        'size.size LIKE :searchTerm ' +
+        'OR size.create_by LIKE :searchTerm ' +
+        'OR size.modify_by LIKE :searchTerm ' +
+        'OR DATE(size.create_date) LIKE :searchTerm ' +
+        'OR DATE(size.modify_date) LIKE :searchTerm',
+        { searchTerm: `%${searchTerm}%` },
+      )
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('size.create_date', 'DESC');
+
+    const [result, total] = await query.getManyAndCount();
+
+    return [result, total];
+  }
 }
