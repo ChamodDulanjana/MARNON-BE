@@ -201,11 +201,13 @@ export class SizeService{
     }
   }
 
-  async searchSizesByPagination(searchTerm: string, pagination: PaginationDTO): Promise<ResponseDTO> {
+  async searchSizesByPagination(searchTerm: string,
+                                status: 'active' | 'inactive' | 'all',
+                                pagination: PaginationDTO, ): Promise<ResponseDTO> {
     try {
       const { page, limit } = pagination;
 
-      const [sizeEntities, total] = await this.sizeRepository.searchSizesByPagination(searchTerm, page, limit);
+      const [sizeEntities, total] = await this.sizeRepository.searchSizesByPagination(searchTerm, status, page, limit);
 
       const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
         id: sizeEntity.id,
@@ -223,6 +225,7 @@ export class SizeService{
         limit,
         totalPages: Math.ceil(total / limit),
       };
+
       this.LOGGER.log(`Search results for "${searchTerm}" found successfully`);
       return new ResponseDTO(200, `Sizes search results fetched successfully`, { sizeList, meta });
     } catch (error) {

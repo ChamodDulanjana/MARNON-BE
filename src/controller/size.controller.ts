@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   UsePipes,
@@ -155,12 +156,13 @@ export class SizeController{
 
   @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
   @Roles(RoleEnum.ADMIN) // Only ADMIN can access
-  @Post('search/sizes/by/pagination/:searchTerm')
-  async searchSizesByPagination(@Param('searchTerm') searchTerm: string,
+  @Post('search/sizes/by/pagination')
+  async searchSizesByPagination(@Query('searchTerm') searchTerm: string,
+                                @Query('status') status: 'active' | 'inactive' | 'all',
                                 @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
     try {
       this.LOGGER.log(`Received request to search sizes by pagination`);
-      return await this.sizeService.searchSizesByPagination(searchTerm, paginationDTO);
+      return await this.sizeService.searchSizesByPagination(searchTerm, status, paginationDTO);
     } catch (error) {
       this.LOGGER.error(`Failed to search sizes by pagination: ${error.message}`);
       throw error;
