@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   UsePipes,
@@ -21,6 +22,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
 import { Request } from 'express';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Controller('category')
 export class CategoryController{
@@ -120,6 +122,21 @@ export class CategoryController{
       return await this.categoryService.getAllActiveCategories();
     } catch (error) {
       this.LOGGER.error(`Failed to get all active categories: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('search/by/pagination')
+  async searchCategoryByPagination(@Query('searchTerm') searchTerm: string,
+                                            @Query('status') status: 'active' | 'inactive' | 'all',
+                                            @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to search categories by pagination`);
+      return await this.categoryService.searchCategoryByPagination(searchTerm, status, paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to search categories by pagination: ${error.message}`);
       throw error;
     }
   }

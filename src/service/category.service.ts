@@ -5,6 +5,7 @@ import { AlreadyExistException } from '../common/exception/alreadyExist.exceptio
 import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { CategoryEntity } from '../entity/category.entity';
 import { NotFoundException } from '../common/exception/notFound.exception';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 type CategoryGet = {
   id: number;
@@ -142,6 +143,40 @@ export class CategoryService{
       return new ResponseDTO(200, 'Category retrieved successfully', categories);
     } catch (error) {
       this.LOGGER.error('Error occurred while retrieving category', error.message);
+      throw error;
+    }
+  }
+
+  async searchCategoryByPagination(searchTerm: string,
+                                            status: 'active' | 'inactive' | 'all',
+                                            pagination: PaginationDTO, ): Promise<ResponseDTO>{
+
+    try {
+      const { page, limit } = pagination;
+
+      const [categoryEntities, total] = await this.categoryRepository.searchCategoryByPagination(searchTerm, status, page, limit);
+
+      const categoryList: CategoryGet[] = categoryEntities.map((categoryEntity) => ({
+        id: categoryEntity.id,
+        name: categoryEntity.name,
+        isActive: categoryEntity.isActive,
+        createBy: categoryEntity.createBy,
+        modifyBy: categoryEntity.modifyBy,
+        createDate: categoryEntity.createDate,
+        modifyDate: categoryEntity.modifyDate,
+      }));
+
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+      this.LOGGER.log(`Search results for "${searchTerm}" found successfully`);
+      return new ResponseDTO(200, `Sizes search results fetched successfully`, { categoryList, meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to search sizes: ${error.message}`);
       throw error;
     }
   }
