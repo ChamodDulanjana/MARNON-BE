@@ -180,4 +180,23 @@ export class CategoryService{
       throw error;
     }
   }
+
+  async changeStatus(id: number, isActive: boolean, userName: string): Promise<ResponseDTO> {
+    const categoryEntity = await this.categoryRepository.getById(id);
+    if (!categoryEntity) {
+      throw new NotFoundException(['Category not found']);
+    }
+
+    try {
+      categoryEntity.isActive = isActive;
+      categoryEntity.modifyBy = userName;
+      await this.categoryRepository.createCategory(categoryEntity);
+
+      this.LOGGER.log(`Category status changed successfully`);
+      return new ResponseDTO(200, 'Category status changed successfully');
+    } catch (error) {
+      this.LOGGER.error(`Failed to change Category status: ${error.message}`);
+      throw error;
+    }
+  }
 }

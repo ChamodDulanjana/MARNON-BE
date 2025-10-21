@@ -140,4 +140,21 @@ export class CategoryController{
       throw error;
     }
   }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Patch('status/change/:id/:isActive')
+  async changeStatus(@Param('id') id: number,
+                     @Param('isActive') isActive: boolean,
+                     @Req() req: Request, ): Promise<ResponseDTO> {
+    try {
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
+
+      this.LOGGER.log(`Received request to change status of category with id ${id} to ${isActive}`);
+      return await this.categoryService.changeStatus(id, isActive, userName);
+    } catch (error) {
+      this.LOGGER.error(`Failed to change status of category: ${error.message}`);
+      throw error;
+    }
+  }
 }

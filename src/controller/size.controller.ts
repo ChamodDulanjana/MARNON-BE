@@ -129,7 +129,6 @@ export class SizeController{
                      @Param('isActive') isActive: boolean,
                      @Req() req: Request, ): Promise<ResponseDTO> {
     try {
-      console.log('Change status called');
       const { userName } = CommonUtil.extractPayloadFromToken(req);
 
       this.LOGGER.log(`Received request to change status of size with id ${id} to ${isActive}`);
