@@ -173,10 +173,10 @@ export class CategoryService{
         totalPages: Math.ceil(total / limit),
       };
 
-      this.LOGGER.log(`Search results for "${searchTerm}" found successfully`);
-      return new ResponseDTO(200, `Sizes search results fetched successfully`, { categoryList, meta });
+      this.LOGGER.log(`Category Search results for "${searchTerm}" found successfully`);
+      return new ResponseDTO(200, `Category search results fetched successfully`, { categoryList, meta });
     } catch (error) {
-      this.LOGGER.error(`Failed to search sizes: ${error.message}`);
+      this.LOGGER.error(`Failed to search category: ${error.message}`);
       throw error;
     }
   }

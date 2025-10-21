@@ -98,7 +98,7 @@ export class AuthService {
       user.username = userDTO.email;
       user.password = await bcrypt.hash(userDTO.password, 10);
       user.contact = userDTO.contact;
-      user.streetAddress = userDTO.streetAddress;
+      user.address = userDTO.address;
       user.role = RoleEnum.USER;
       user.createBy = userDTO.email;
       user.isActive = true;

@@ -46,4 +46,43 @@ export class UserRepository {
   async getAllCustomersCount(): Promise<number> {
     return await this.userRepository.count({ where: { role: RoleEnum.USER } });
   }
+
+  // search category by pagination and status
+  async searchUserByPagination(searchTerm: string,
+                                   status: 'active' | 'inactive' | 'all',
+                                   page: number,
+                                   limit: number, ): Promise<[UserEntity[], number]>{
+    const query = this.userRepository.createQueryBuilder('user');
+
+    // Search conditions
+    query.where(
+      '(user.name LIKE :searchTerm ' +
+      'OR user.email LIKE :searchTerm ' +
+      'OR user.contact LIKE :searchTerm ' +
+      'OR user.address LIKE :searchTerm ' +
+      'OR user.city LIKE :searchTerm ' +
+      'OR user.postal_code LIKE :searchTerm ' +
+      'OR user.role LIKE :searchTerm ' +
+      'OR user.create_by LIKE :searchTerm ' +
+      'OR user.modify_by LIKE :searchTerm ' +
+      'OR DATE(user.create_date) LIKE :searchTerm ' +
+      'OR DATE(user.modify_date) LIKE :searchTerm)',
+      { searchTerm: `%${searchTerm}%` },
+    );
+
+    // Apply isActive filter if not all
+    if (status !== 'all') {
+      const isActive = status === 'active' ? 1 : 0;
+      query.andWhere('user.is_active = :isActive', { isActive });
+    }
+
+    query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('user.create_date', 'DESC');
+
+    const [result, total] = await query.getManyAndCount();
+
+    return [result, total];
+  }
 }

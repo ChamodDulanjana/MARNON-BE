@@ -8,6 +8,7 @@ import { RoleEnum } from '../common/enums/role.enum';
 import { UserEntity } from '../entity/user.entity';
 import * as bcrypt from 'bcryptjs';
 import { UserUpdateDTO } from '../dto/user-update.dto';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 type UserGet = {
   id: number;
@@ -16,10 +17,10 @@ type UserGet = {
   email: string;
   role: string;
   contact: string;
-  streetAddress: string;
-  townOrCity: string;
-  provinceOrState: string;
+  address: string;
+  city: string;
   postalCode: string;
+  isActive: boolean;
   createDate: Date;
   createBy: string;
   modifyDate: Date;
@@ -49,10 +50,10 @@ export class UserService{
         email: userEntity.email,
         role: userEntity.role,
         contact: userEntity.contact,
-        streetAddress: userEntity.streetAddress,
-        townOrCity: userEntity.townOrCity,
-        provinceOrState: userEntity.provinceOrState,
+        address: userEntity.address,
+        city: userEntity.city,
         postalCode: userEntity.postalCode,
+        isActive: userEntity.isActive,
         createDate: userEntity.createDate,
         createBy: userEntity.createBy,
         modifyDate: userEntity.modifyDate,
@@ -81,10 +82,10 @@ export class UserService{
         email: userEntity.email,
         role: userEntity.role,
         contact: userEntity.contact,
-        streetAddress: userEntity.streetAddress,
-        townOrCity: userEntity.townOrCity,
-        provinceOrState: userEntity.provinceOrState,
+        address: userEntity.address,
+        city: userEntity.city,
         postalCode: userEntity.postalCode,
+        isActive: userEntity.isActive,
         createDate: userEntity.createDate,
         createBy: userEntity.createBy,
         modifyDate: userEntity.modifyDate,
@@ -110,10 +111,10 @@ export class UserService{
           email: userEntity.email,
           role: userEntity.role,
           contact: userEntity.contact,
-          streetAddress: userEntity.streetAddress,
-          townOrCity: userEntity.townOrCity,
-          provinceOrState: userEntity.provinceOrState,
+          address: userEntity.address,
+          city: userEntity.city,
           postalCode: userEntity.postalCode,
+          isActive: userEntity.isActive,
           createDate: userEntity.createDate,
           createBy: userEntity.createBy,
           modifyDate: userEntity.modifyDate,
@@ -140,10 +141,10 @@ export class UserService{
           email: userEntity.email,
           role: userEntity.role,
           contact: userEntity.contact,
-          streetAddress: userEntity.streetAddress,
-          townOrCity: userEntity.townOrCity,
-          provinceOrState: userEntity.provinceOrState,
+          address: userEntity.address,
+          city: userEntity.city,
           postalCode: userEntity.postalCode,
+          isActive: userEntity.isActive,
           createDate: userEntity.createDate,
           createBy: userEntity.createBy,
           modifyDate: userEntity.modifyDate,
@@ -174,9 +175,8 @@ export class UserService{
     try {
       userEntity.name = userDTO.name;
       userEntity.contact = userDTO.contact;
-      userEntity.streetAddress = userDTO.streetAddress;
-      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
-      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userEntity.address = userDTO.address;
+      userDTO.city && (userEntity.city = userDTO.city);
       userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.modifyBy = userName;
 
@@ -210,9 +210,8 @@ export class UserService{
     try {
       userEntity.name = userDTO.name;
       userEntity.contact = userDTO.contact;
-      userEntity.streetAddress = userDTO.streetAddress;
-      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
-      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userEntity.address = userDTO.address;
+      userDTO.city && (userEntity.city = userDTO.city);
       userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.role = userDTO.role;
       userEntity.modifyBy = userName;
@@ -250,9 +249,8 @@ export class UserService{
       userEntity.username = userDTO.email;
       userEntity.password = await bcrypt.hash(userDTO.password, 10);
       userEntity.contact = userDTO.contact;
-      userEntity.streetAddress = userDTO.streetAddress;
-      userDTO.townOrCity && (userEntity.townOrCity = userDTO.townOrCity);
-      userDTO.provinceOrState && (userEntity.provinceOrState = userDTO.provinceOrState);
+      userEntity.address = userDTO.address;
+      userDTO.city && (userEntity.city = userDTO.city);
       userDTO.postalCode && (userEntity.postalCode = userDTO.postalCode);
       userEntity.role = userDTO.role;
       userEntity.createBy = userName;
@@ -287,13 +285,8 @@ export class UserService{
     }
 
     // Check if town or city is provided
-    if (!userDTO.townOrCity || userDTO.townOrCity.trim() === '') {
-      throw new BadRequestException('Town or City is required');
-    }
-
-    // Check if province or state is provided
-    if (!userDTO.provinceOrState || userDTO.provinceOrState.trim() === '') {
-      throw new BadRequestException('Province or State is required');
+    if (!userDTO.city || userDTO.city.trim() === '') {
+      throw new BadRequestException('City is required');
     }
 
     // Check if postal code is provided
@@ -304,9 +297,8 @@ export class UserService{
     try {
       userEntity.name = userDTO.name;
       userEntity.contact = userDTO.contact;
-      userEntity.streetAddress = userDTO.streetAddress;
-      userEntity.townOrCity = userDTO.townOrCity;
-      userEntity.provinceOrState = userDTO.provinceOrState;
+      userEntity.address = userDTO.address;
+      userEntity.city = userDTO.city;
       userEntity.postalCode = userDTO.postalCode;
       userEntity.modifyBy = userName;
 
@@ -316,6 +308,49 @@ export class UserService{
       return new ResponseDTO(200, `User with id ${id} updated successfully`);
     } catch (error) {
       this.LOGGER.error(`Failed to update user: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async searchUserByPagination(searchTerm: string,
+                                   status: 'active' | 'inactive' | 'all',
+                                   pagination: PaginationDTO, ): Promise<ResponseDTO>{
+
+    try {
+      const { page, limit } = pagination;
+
+      const [userEntities, total] = await this.userRepository.searchUserByPagination(searchTerm, status, page, limit);
+
+      const userList: UserGet[] = userEntities.map((userEntity) => {
+        return {
+          id: userEntity.id,
+          name: userEntity.name,
+          username: userEntity.username,
+          email: userEntity.email,
+          role: userEntity.role,
+          contact: userEntity.contact,
+          address: userEntity.address,
+          city: userEntity.city,
+          postalCode: userEntity.postalCode,
+          isActive: userEntity.isActive,
+          createDate: userEntity.createDate,
+          createBy: userEntity.createBy,
+          modifyDate: userEntity.modifyDate,
+          modifyBy: userEntity.modifyBy,
+        }
+      });
+
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+      this.LOGGER.log(`User Search results for "${searchTerm}" found successfully`);
+      return new ResponseDTO(200, `User search results fetched successfully`, { userList, meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to search user: ${error.message}`);
       throw error;
     }
   }

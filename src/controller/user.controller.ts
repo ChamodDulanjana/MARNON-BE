@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   UsePipes,
@@ -23,6 +24,7 @@ import { ValidationException } from '../common/exception/validation.exception';
 import { UserUpdateDTO } from '../dto/user-update.dto';
 import { Request } from 'express';
 import { CommonUtil } from '../util/common-util';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Controller('user')
 export class UserController {
@@ -171,6 +173,21 @@ export class UserController {
       return await this.userService.getAllCustomersCount();
     } catch (error) {
       this.LOGGER.error(`Failed to get all customers count: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('search/by/pagination')
+  async searchUserByPagination(@Query('searchTerm') searchTerm: string,
+                                   @Query('status') status: 'active' | 'inactive' | 'all',
+                                   @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to search users by pagination`);
+      return await this.userService.searchUserByPagination(searchTerm, status, paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to search users by pagination: ${error.message}`);
       throw error;
     }
   }
