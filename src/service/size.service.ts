@@ -5,6 +5,7 @@ import { ResponseDTO } from '../dto/req&resp/response.dto';
 import { AlreadyExistException } from '../common/exception/alreadyExist.exception';
 import { SizeEntity } from '../entity/size.entity';
 import { NotFoundException } from '../common/exception/notFound.exception';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 type SizeGet = {
   id: number;
@@ -146,6 +147,118 @@ export class SizeService{
       return new ResponseDTO(200, `All active sizes found successfully`, sizes);
     } catch (error) {
       this.LOGGER.error(`Failed to find active sizes: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async changeStatus(id: number, isActive: boolean, userName: string): Promise<ResponseDTO> {
+    const sizeEntity = await this.sizeRepository.getById(id);
+    if (!sizeEntity) {
+      throw new NotFoundException(['Size not found']);
+    }
+
+    try {
+      sizeEntity.isActive = isActive;
+      sizeEntity.modifyBy = userName;
+      await this.sizeRepository.createSize(sizeEntity);
+
+      this.LOGGER.log(`Size status changed successfully`);
+      return new ResponseDTO(200, 'Size status changed successfully');
+    } catch (error) {
+      this.LOGGER.error(`Failed to change size status: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getAllSizesByPagination(pagination: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      const { page, limit } = pagination;
+
+      const [sizeEntities, total] = await this.sizeRepository.getAllSizesByPagination(page, limit);
+
+      const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
+        id: sizeEntity.id,
+        size: sizeEntity.size,
+        isActive: sizeEntity.isActive,
+        createBy: sizeEntity.createBy,
+        modifyBy: sizeEntity.modifyBy,
+        createDate: sizeEntity.createDate,
+        modifyDate: sizeEntity.modifyDate,
+      }));
+
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+      this.LOGGER.log(`Page ${page} of sizes found successfully`);
+      return new ResponseDTO(200, `Sizes fetched successfully`, { sizeList, meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to find sizes: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async searchSizesByPagination(searchTerm: string,
+                                status: 'active' | 'inactive' | 'all',
+                                pagination: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      const { page, limit } = pagination;
+
+      const [sizeEntities, total] = await this.sizeRepository.searchSizesByPagination(searchTerm, status, page, limit);
+
+      const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
+        id: sizeEntity.id,
+        size: sizeEntity.size,
+        isActive: sizeEntity.isActive,
+        createBy: sizeEntity.createBy,
+        modifyBy: sizeEntity.modifyBy,
+        createDate: sizeEntity.createDate,
+        modifyDate: sizeEntity.modifyDate,
+      }));
+
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+
+      this.LOGGER.log(`Search results for "${searchTerm}" found successfully`);
+      return new ResponseDTO(200, `Sizes search results fetched successfully`, { sizeList, meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to search sizes: ${error.message}`);
+      throw error;
+    }
+  }
+
+  async getSizesByStatusAndPagination(isActive: boolean, pagination: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      const { page, limit } = pagination;
+
+      const [sizeEntities, total] = await this.sizeRepository.getSizesByStatusAndPagination(isActive, page, limit);
+
+      const sizeList: SizeGet[] = sizeEntities.map((sizeEntity) => ({
+        id: sizeEntity.id,
+        size: sizeEntity.size,
+        isActive: sizeEntity.isActive,
+        createBy: sizeEntity.createBy,
+        modifyBy: sizeEntity.modifyBy,
+        createDate: sizeEntity.createDate,
+        modifyDate: sizeEntity.modifyDate,
+      }));
+      const meta = {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+      this.LOGGER.log(`Sizes with status ${isActive} fetched successfully`);
+      return new ResponseDTO(200, `Sizes with status fetched successfully`, { sizeList,  meta });
+    } catch (error) {
+      this.LOGGER.error(`Failed to find sizes by status: ${error.message}`);
       throw error;
     }
   }

@@ -31,4 +31,64 @@ export class SizeRepository{
   async checkSizeName(name: string): Promise<SizeEntity | null> {
     return await this.sizeRepository.findOne({where: { size: name }});
   }
+
+  // Get sizes By pagination
+  async getAllSizesByPagination(page: number, limit: number): Promise<[SizeEntity[], number]> {
+    const [result, total] = await this.sizeRepository.findAndCount({
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createDate: 'DESC', // order newest first
+      },
+    });
+
+    return [result, total];
+  }
+
+  // Search sizes By pagination
+  async searchSizesByPagination(searchTerm: string,
+                                status: 'active' | 'inactive' | 'all',
+                                page: number,
+                                limit: number, ): Promise<[SizeEntity[], number]> {
+    const query = this.sizeRepository.createQueryBuilder('size');
+
+    // Search conditions
+    query.where(
+      '(size.size LIKE :searchTerm ' +
+      'OR size.create_by LIKE :searchTerm ' +
+      'OR size.modify_by LIKE :searchTerm ' +
+      'OR DATE(size.create_date) LIKE :searchTerm ' +
+      'OR DATE(size.modify_date) LIKE :searchTerm)',
+      { searchTerm: `%${searchTerm}%` },
+    );
+
+    // Apply isActive filter if not all
+    if (status !== 'all') {
+      const isActive = status === 'active' ? 1 : 0;
+      query.andWhere('size.is_active = :isActive', { isActive });
+    }
+
+    query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .orderBy('size.create_date', 'DESC');
+
+    const [result, total] = await query.getManyAndCount();
+
+    return [result, total];
+  }
+
+  // Get sizes By status and pagination
+  async getSizesByStatusAndPagination(isActive: boolean, page: number, limit: number): Promise<[SizeEntity[], number]> {
+    const [result, total] = await this.sizeRepository.findAndCount({
+      where: { isActive: isActive },
+      skip: (page - 1) * limit,
+      take: limit,
+      order: {
+        createDate: 'DESC', // order newest first
+      },
+    });
+
+    return [result, total];
+  }
 }

@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
   UsePipes,
@@ -21,6 +22,7 @@ import { Roles } from '../common/decorators/roles.decorator';
 import { RoleEnum } from '../common/enums/role.enum';
 import { ValidationException } from '../common/exception/validation.exception';
 import { Request } from 'express';
+import { PaginationDTO } from '../dto/pagination.dto';
 
 @Controller('size')
 export class SizeController{
@@ -116,6 +118,67 @@ export class SizeController{
       return await this.sizeService.getById(id);
     } catch (error) {
       this.LOGGER.error(`Failed to get size: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Patch('status/change/:id/:isActive')
+  async changeStatus(@Param('id') id: number,
+                     @Param('isActive') isActive: boolean,
+                     @Req() req: Request, ): Promise<ResponseDTO> {
+    try {
+      console.log('Change status called');
+      const { userName } = CommonUtil.extractPayloadFromToken(req);
+
+      this.LOGGER.log(`Received request to change status of size with id ${id} to ${isActive}`);
+      return await this.sizeService.changeStatus(id, isActive, userName);
+    } catch (error) {
+      this.LOGGER.error(`Failed to change status of size: ${error.message}`);
+      throw error;
+    }
+  }
+
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('all/sizes/by/pagination')
+  async getAllSizesByPagination(@Body() paginationDTO: PaginationDTO): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get all sizes by pagination`);
+      return await this.sizeService.getAllSizesByPagination(paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get all sizes by pagination: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('search/sizes/by/pagination')
+  async searchSizesByPagination(@Query('searchTerm') searchTerm: string,
+                                @Query('status') status: 'active' | 'inactive' | 'all',
+                                @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to search sizes by pagination`);
+      return await this.sizeService.searchSizesByPagination(searchTerm, status, paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to search sizes by pagination: ${error.message}`);
+      throw error;
+    }
+  }
+
+  @UseGuards(AuthGuard, RolesGuard) // Apply both JWT and Role Guards
+  @Roles(RoleEnum.ADMIN) // Only ADMIN can access
+  @Post('by/status/and/pagination/:isActive')
+  async getSizesByStatusAndPagination(@Param('isActive') isActive: boolean,
+                                      @Body() paginationDTO: PaginationDTO, ): Promise<ResponseDTO> {
+    try {
+      this.LOGGER.log(`Received request to get sizes by status and pagination`);
+      return await this.sizeService.getSizesByStatusAndPagination(isActive, paginationDTO);
+    } catch (error) {
+      this.LOGGER.error(`Failed to get sizes by status and pagination: ${error.message}`);
       throw error;
     }
   }
